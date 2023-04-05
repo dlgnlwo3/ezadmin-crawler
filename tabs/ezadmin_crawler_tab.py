@@ -69,6 +69,7 @@ class EzadminCrawlerTab(QWidget):
         guiDto.account_file = account_file
         guiDto.stats_file = stats_file
         guiDto.sheet_name = self.sheet_combobox.currentText()
+        guiDto.target_date = self.date_edit.text()
 
         self.crawler_thread = EzadminCrawlerThread()
         self.crawler_thread.log_msg.connect(self.log_append)
@@ -227,7 +228,8 @@ class EzadminCrawlerTab(QWidget):
         mid_layout.addWidget(date_edit_groupbox, 3)
 
         bottom_layout = QHBoxLayout()
-        bottom_layout.addWidget(start_stop_groupbox)
+        bottom_layout.addStretch(5)
+        bottom_layout.addWidget(start_stop_groupbox, 3)
 
         log_layout = QVBoxLayout()
         log_layout.addWidget(log_groupbox)
