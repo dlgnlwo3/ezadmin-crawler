@@ -34,6 +34,12 @@ class EzadminCrawlerProcess:
         # self.driver.implicitly_wait(self.default_wait)
         # self.driver.maximize_window()
 
+    def setGuiDto(self, guiDto: GUIDto):
+        self.guiDto = guiDto
+
+    def setLogger(self, log_msg):
+        self.log_msg = log_msg
+
     def get_dict_account(self):
         df_accounts = AccountFile(self.guiDto.account_file).df_account
         df_accounts = df_accounts.fillna("")
@@ -47,9 +53,9 @@ class EzadminCrawlerProcess:
             dict_accounts[channel] = {"도메인": domain, "ID": account_id, "PW": account_pw, "URL": url}
         return dict_accounts
 
-    def get_df_stats(self):
-        # header 옵션에 2를 넣어서 3행부터 시작합니다.
-        # 3행에는 각 쇼핑몰의 이름이 들어있습니다.
+    def get_store_list(self):
+        # header 옵션에 2를 넣어서 3행부터 읽기 시작합니다.
+        # 반드시 3행에 쇼핑몰의 이름이 위치해야 합니다.
         df_stats: pd.DataFrame = pd.read_excel(
             self.guiDto.stats_file, sheet_name=self.guiDto.sheet_name, keep_default_na="", header=2
         )
@@ -58,31 +64,8 @@ class EzadminCrawlerProcess:
             if column.find("Unnamed") <= -1 and column.find("\n") <= -1 and column.find("합계") <= -1:
                 store_list.append(column)
         print(store_list)
-
-        workbook = load_workbook(self.guiDto.stats_file)
-
-        sheet = workbook[self.guiDto.sheet_name]
-
-        merged_cells = sheet.merged_cells
-        # print(merged_cells)
-
-        value = store_list[0]
-
-        # 병합된 셀의 범위를 순회하며 입력된 문자(value)를 입력
-        for merged_cell in merged_cells:
-            if merged_cell.start_cell.internal_value == value:
-                print(merged_cell.start_cell.internal_value)
-                store_range = merged_cell.coord
-                break
-
-        print(store_range)
-        print()
-
-    def setGuiDto(self, guiDto: GUIDto):
-        self.guiDto = guiDto
-
-    def setLogger(self, log_msg):
-        self.log_msg = log_msg
+        self.log_msg.emit(f"{store_list}가 발견되었습니다.")
+        return store_list
 
     def login(self, user_id: str, user_pw: str):
         driver = self.driver
@@ -97,8 +80,25 @@ class EzadminCrawlerProcess:
             # 계정 엑셀 파일
             self.dict_accounts = self.get_dict_account()
 
-            # 통계 엑셀 파일
-            self.df_stats = self.get_df_stats()
+            # 통계 엑셀 파일에서 상점 이름을 추출합니다.
+            store_list = self.get_store_list()
+
+            self.workbook = load_workbook(self.guiDto.stats_file)
+
+            self.sheet = self.workbook[self.guiDto.sheet_name]
+
+            for store_name in store_list:
+                print(store_name)
+                merged_cells = self.sheet.merged_cells
+
+                for merged_cell in merged_cells:
+                    if merged_cell.start_cell.internal_value == store_name:
+                        print(merged_cell.start_cell.internal_value)
+                        store_column_range = merged_cell.coord
+                        break
+
+                print(store_column_range)
+                print()
 
         except Exception as e:
             print(e)
@@ -107,6 +107,7 @@ class EzadminCrawlerProcess:
 
         finally:
             # self.driver.close()
+            self.workbook.close()
             time.sleep(0.2)
 
 
