@@ -82,6 +82,17 @@ class EzadminCrawlerProcess:
         print(store_column_range)
         return store_column_range
 
+    def get_target_date_row(self, target_date):
+        # 순회할 셀 범위 지정
+        min_row, max_row = 1, self.sheet.max_row
+        min_col, max_col = 1, self.sheet.max_column
+
+        for row in self.sheet.iter_rows(min_row=min_row, max_row=max_row, min_col=min_col, max_col=max_col):
+            for cell in row:
+                if target_date in str(cell.value):
+                    print(f"'{target_date}'이 포함된 셀 위치: ({cell.row}, {cell.column})")
+                    return cell.row
+
     def login(self, user_id: str, user_pw: str):
         driver = self.driver
         driver.get(f"https://ylkorea1.cafe24.com/member/login.html")
@@ -102,12 +113,15 @@ class EzadminCrawlerProcess:
 
             self.sheet = self.workbook[self.guiDto.sheet_name]
 
+            target_date_row = self.get_target_date_row(self.guiDto.target_date)
+
             for store_name in store_list:
                 print(f"{store_name} 작업 시작")
                 self.log_msg.emit(f"{store_name} 작업 시작")
 
                 try:
                     store_column_range = self.get_store_column_range(store_name)
+
                     print()
 
                 except Exception as e:
