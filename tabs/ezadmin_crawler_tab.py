@@ -59,9 +59,16 @@ class EzadminCrawlerTab(QWidget):
             QMessageBox.information(self, "작업 시작", f"엑셀 경로가 잘못되었습니다.")
             return
 
+        if self.sheet_combobox.currentText() == "":
+            print(f"시트를 선택해주세요.")
+            QMessageBox.information(self, "작업 시작", f"시트를 선택해주세요.")
+            self.log_append(f"시트를 선택해주세요.")
+            return
+
         guiDto = GUIDto()
         guiDto.account_file = account_file
         guiDto.stats_file = stats_file
+        guiDto.sheet_name = self.sheet_combobox.currentText()
 
         self.crawler_thread = EzadminCrawlerThread()
         self.crawler_thread.log_msg.connect(self.log_append)
@@ -124,7 +131,6 @@ class EzadminCrawlerTab(QWidget):
         self.stats_file.setText(file_name[0])
 
     def stats_file_textChanged(self):
-        print("text changed")
         self.sheet_combobox.clear()
         try:
             excel_file = pd.ExcelFile(self.stats_file.text())
@@ -135,7 +141,6 @@ class EzadminCrawlerTab(QWidget):
 
     # 단말기 콤보박스 세팅
     def set_sheet_combobox(self, sheet_list):
-        print(sheet_list)
         for sheet in sheet_list:
             self.sheet_combobox.addItem(sheet)
 
@@ -148,6 +153,15 @@ class EzadminCrawlerTab(QWidget):
         sheet_setting_inner_layout = QHBoxLayout()
         sheet_setting_inner_layout.addWidget(self.sheet_combobox)
         sheet_setting_groupbox.setLayout(sheet_setting_inner_layout)
+
+        # 작업 날짜 선택
+        date_edit_groupbox = QGroupBox("날짜 선택")
+        self.date_edit = QDateEdit(QDate.currentDate())
+        self.date_edit.setGeometry(100, 100, 150, 40)
+
+        date_edit_inner_layout = QHBoxLayout()
+        date_edit_inner_layout.addWidget(self.date_edit)
+        date_edit_groupbox.setLayout(date_edit_inner_layout)
 
         # 계정 엑셀 파일
         account_file_groupbox = QGroupBox("계정 엑셀 파일")
@@ -209,11 +223,11 @@ class EzadminCrawlerTab(QWidget):
         top_layout.addWidget(stats_file_groupbox)
 
         mid_layout = QHBoxLayout()
-        mid_layout.addStretch(5)
-        mid_layout.addWidget(sheet_setting_groupbox, 4)
-        mid_layout.addWidget(start_stop_groupbox, 3)
+        mid_layout.addWidget(sheet_setting_groupbox, 5)
+        mid_layout.addWidget(date_edit_groupbox, 3)
 
         bottom_layout = QHBoxLayout()
+        bottom_layout.addWidget(start_stop_groupbox)
 
         log_layout = QVBoxLayout()
         log_layout.addWidget(log_groupbox)

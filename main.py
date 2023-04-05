@@ -91,7 +91,7 @@ class MainUI(QWidget):
 
         # 앱 기본 설정
         self.setWindowTitle(f"ezadmin v0.0.1")
-        self.resize(600, 600)
+        self.resize(600, 800)
         self.center()
         self.show()
 
