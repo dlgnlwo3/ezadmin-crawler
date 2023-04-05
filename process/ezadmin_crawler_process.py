@@ -25,6 +25,8 @@ import time
 import pandas as pd
 from openpyxl import load_workbook
 
+import re
+
 
 class EzadminCrawlerProcess:
     def __init__(self):
@@ -67,6 +69,19 @@ class EzadminCrawlerProcess:
         self.log_msg.emit(f"{store_list}가 발견되었습니다.")
         return store_list
 
+    def get_store_column_range(self, store_name):
+        merged_cells = self.sheet.merged_cells
+
+        for merged_cell in merged_cells:
+            if merged_cell.start_cell.internal_value == store_name:
+                print(merged_cell.start_cell.internal_value)
+                store_column_range = merged_cell.coord
+                break
+
+        store_column_range = re.sub(r"\d+", "", store_column_range)
+        print(store_column_range)
+        return store_column_range
+
     def login(self, user_id: str, user_pw: str):
         driver = self.driver
         driver.get(f"https://ylkorea1.cafe24.com/member/login.html")
@@ -88,22 +103,25 @@ class EzadminCrawlerProcess:
             self.sheet = self.workbook[self.guiDto.sheet_name]
 
             for store_name in store_list:
-                print(store_name)
-                merged_cells = self.sheet.merged_cells
+                print(f"{store_name} 작업 시작")
+                self.log_msg.emit(f"{store_name} 작업 시작")
 
-                for merged_cell in merged_cells:
-                    if merged_cell.start_cell.internal_value == store_name:
-                        print(merged_cell.start_cell.internal_value)
-                        store_column_range = merged_cell.coord
-                        break
+                try:
+                    store_column_range = self.get_store_column_range(store_name)
+                    print()
 
-                print(store_column_range)
-                print()
+                except Exception as e:
+                    print(str(e))
+                    self.log_msg.emit(f"{store_name} 작업 실패")
+                    global_log_append(str(e))
+                    continue
 
         except Exception as e:
-            print(e)
+            print(str(e))
             if str(e).find("채널명") > -1:
                 self.log_msg.emit(f"계정 엑셀 파일 양식이 아닙니다.")
+            else:
+                self.log_msg.emit(f"{str(e)}")
 
         finally:
             # self.driver.close()
