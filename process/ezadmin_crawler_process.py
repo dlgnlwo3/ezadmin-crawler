@@ -23,6 +23,7 @@ from datetime import timedelta, datetime
 import time
 
 import pandas as pd
+from openpyxl import load_workbook
 
 
 class EzadminCrawlerProcess:
@@ -56,9 +57,25 @@ class EzadminCrawlerProcess:
         for column in df_stats.columns:
             if column.find("Unnamed") <= -1 and column.find("\n") <= -1 and column.find("합계") <= -1:
                 store_list.append(column)
-
         print(store_list)
 
+        workbook = load_workbook(self.guiDto.stats_file)
+
+        sheet = workbook[self.guiDto.sheet_name]
+
+        merged_cells = sheet.merged_cells
+        # print(merged_cells)
+
+        value = store_list[0]
+
+        # 병합된 셀의 범위를 순회하며 입력된 문자(value)를 입력
+        for merged_cell in merged_cells:
+            if merged_cell.start_cell.internal_value == value:
+                print(merged_cell.start_cell.internal_value)
+                store_range = merged_cell.coord
+                break
+
+        print(store_range)
         print()
 
     def setGuiDto(self, guiDto: GUIDto):
