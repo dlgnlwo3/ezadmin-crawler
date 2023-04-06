@@ -14,11 +14,16 @@ from common.selenium_activities import close_new_tabs, alert_ok_try
 from common.account_file import AccountFile
 from common.store_column_enum import CommonStoreEnum, Cafe24Enum, ElevenStreetEnum
 
+from features.convert_store_name import StoreNameConverter
+
+from dtos.store_detail_dto import StoreDetailDto
+
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import ActionChains
+from selenium.webdriver.support.select import Select
 
 from datetime import timedelta, datetime
 import time
@@ -70,7 +75,7 @@ class EzadminCrawlerProcess:
         self.log_msg.emit(f"{store_list}가 발견되었습니다.")
         return store_list
 
-    def get_store_column_range(self, store_name):
+    def get_store_min_col(self, store_name):
         merged_cells = self.sheet.merged_cells
 
         for merged_cell in merged_cells:
@@ -84,7 +89,7 @@ class EzadminCrawlerProcess:
 
         # store_column_range = re.sub(r"\d+", "", store_column_range)
         print(store_column_range)
-        return store_column_range
+        return store_min_col
 
     def get_target_date_row(self, target_date):
         # 순회할 셀 범위 지정
@@ -178,13 +183,118 @@ class EzadminCrawlerProcess:
             driver.implicitly_wait(self.default_wait)
 
     # 정산통계 -> 판매처별정산통계 화면으로 이동합니다.
-    def go_store_stats_menu(self):
+    def go_store_stats_menu_and_search_date(self):
         driver = self.driver
         driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F308")
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "판매처별정산통계")]'))
         )
         time.sleep(0.1)
+
+        # 날짜 검색 타입
+        query_type_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="query_type"]'))
+        query_type_select.select_by_visible_text("주문일")
+        time.sleep(0.2)
+
+        # 시작일
+        start_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="start_date"]')
+        start_date_input.clear()
+        start_date_input.send_keys(self.guiDto.target_date)
+
+        # 종료일
+        end_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="end_date"]')
+        end_date_input.clear()
+        end_date_input.send_keys(self.guiDto.target_date)
+
+        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        driver.execute_script("arguments[0].click();", search_button)
+        time.sleep(3)
+
+    def get_calculate_from_tr(self, store_name: str, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        store_name = StoreNameConverter().convert_store_name(store_name)
+        print(store_name)
+        time.sleep(0.2)
+
+        store_detail_dto.store_name = store_name
+
+        # $x('//tr[./td[contains(text(), "11번가") and @class="shop_name"]]')
+        try:
+            result_tr = driver.find_element(
+                By.XPATH, f'//tr[./td[contains(text(), "{store_name}") and @class="shop_name"]]'
+            )
+
+            # 주문수량
+            tot_products = result_tr.find_element(
+                By.CSS_SELECTOR, 'td[aria-describedby*="tot_products"]'
+            ).get_attribute("textContent")
+            store_detail_dto.tot_products = tot_products
+
+            # 주문금액
+            tot_amount = result_tr.find_element(By.CSS_SELECTOR, 'td[aria-describedby*="tot_amount"]').get_attribute(
+                "textContent"
+            )
+            store_detail_dto.tot_amount = tot_amount
+
+            # 상품원가
+            org_price = result_tr.find_element(By.CSS_SELECTOR, 'td[aria-describedby*="org_price"]').get_attribute(
+                "textContent"
+            )
+            store_detail_dto.org_price = org_price
+
+        except Exception as e:
+            print(f"{store_name} 검색 결과를 발견하지 못했습니다.")
+
+        return store_detail_dto
+
+    def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
+        # 주문수량
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.주문수량.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.주문수량.value
+            else:
+                sheet_coord = CommonStoreEnum.주문수량.value
+
+            self.sheet.cell(
+                row=target_date_row, column=store_min_col + sheet_coord
+            ).value = store_detail_dto.tot_products
+
+        except Exception as e:
+            print(e)
+
+        # 주문금액
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.주문금액.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.주문금액.value
+            else:
+                sheet_coord = CommonStoreEnum.주문금액.value
+
+            self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord).value = store_detail_dto.tot_amount
+
+        except Exception as e:
+            print(e)
+
+        # 원가금액
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.원가금액.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.원가금액.value
+            else:
+                sheet_coord = CommonStoreEnum.원가금액.value
+
+            self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord).value = store_detail_dto.org_price
+
+        except Exception as e:
+            print(e)
+
+        self.workbook.save(self.guiDto.stats_file)
+
+        time.sleep(1)
 
     # 전체작업 시작
     def work_start(self):
@@ -207,20 +317,26 @@ class EzadminCrawlerProcess:
 
             for store_name in store_list:
                 print(f"{store_name} 작업 시작")
+
                 self.log_msg.emit(f"{store_name} 작업 시작")
 
+                store_detail_dto = StoreDetailDto()
+
                 try:
-                    store_column_range = self.get_store_column_range(store_name)
+                    store_min_col = self.get_store_min_col(store_name)
 
-                    self.go_store_stats_menu()
+                    self.go_store_stats_menu_and_search_date()
 
-                    print()
+                    store_detail_dto = self.get_calculate_from_tr(store_name, store_detail_dto)
 
                 except Exception as e:
                     print(str(e))
                     self.log_msg.emit(f"{store_name} 작업 실패")
                     global_log_append(str(e))
                     continue
+
+                finally:
+                    self.update_excel_from_dto(target_date_row, store_min_col, store_detail_dto)
 
         except Exception as e:
             print(str(e))
@@ -230,7 +346,7 @@ class EzadminCrawlerProcess:
                 self.log_msg.emit(f"{str(e)}")
 
         finally:
-            # self.driver.close()
+            self.driver.close()
             self.workbook.close()
             time.sleep(0.2)
 

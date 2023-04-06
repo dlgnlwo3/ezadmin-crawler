@@ -60,7 +60,7 @@ def get_chrome_driver(is_headless=False, is_secret=False):
         driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
 
     driver.implicitly_wait(10)  # 페이지가 로딩될 때 까지
-    driver.set_page_load_timeout(10)  # 브라우저 작동 대기
+    driver.set_page_load_timeout(120)  # 브라우저 작동 대기
     return driver
 
 
@@ -100,7 +100,7 @@ def get_chrome_driver_new(is_headless=False, is_secret=False, tor=False, move_to
         chromedriver_autoinstaller.install("./")
         driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
     driver.implicitly_wait(5)  # 페이지가 로딩될 때 까지 10초동안 대기
-    driver.set_page_load_timeout(60)  # 브라우저의 로딩시간 대기
+    driver.set_page_load_timeout(120)  # 브라우저의 로딩시간 대기
 
     driver.maximize_window()
     # driver.minimize_window()
