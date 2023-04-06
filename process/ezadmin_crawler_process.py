@@ -12,6 +12,7 @@ from common.utils import global_log_append
 from common.chrome import open_browser, get_chrome_driver
 from common.selenium_activities import close_new_tabs, alert_ok_try
 from common.account_file import AccountFile
+from common.store_column_enum import CommonStoreEnum, Cafe24Enum, ElevenStreetEnum
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -30,11 +31,11 @@ import re
 
 class EzadminCrawlerProcess:
     def __init__(self):
+        open_browser()
         self.default_wait = 10
-        # open_browser()
-        # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
-        # self.driver.implicitly_wait(self.default_wait)
-        # self.driver.maximize_window()
+        self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
+        self.driver.implicitly_wait(self.default_wait)
+        self.driver.maximize_window()
 
     def setGuiDto(self, guiDto: GUIDto):
         self.guiDto = guiDto
@@ -96,10 +97,94 @@ class EzadminCrawlerProcess:
                     print(f"'{target_date}'이 포함된 셀 위치: ({cell.row}, {cell.column})")
                     return cell.row
 
-    def login(self, user_id: str, user_pw: str):
+    def ezadmin_login(self):
         driver = self.driver
-        driver.get(f"https://ylkorea1.cafe24.com/member/login.html")
+        self.driver.get(self.dict_accounts["이지어드민"]["URL"])
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, '//body[@class="ezadmin-main-body"]'))
+        )
         time.sleep(0.2)
+
+        login_domain = self.dict_accounts["이지어드민"]["도메인"]
+        login_id = self.dict_accounts["이지어드민"]["ID"]
+        login_pw = self.dict_accounts["이지어드민"]["PW"]
+
+        # 로그인 시도
+        # 이 행위 중 하나라도 실패한다면 로그인 실패
+        try:
+            driver.implicitly_wait(2)
+
+            open_button = driver.find_element(By.XPATH, '//a[./span[@class="img_login"]][contains(text(), "로그인")]')
+            driver.execute_script("arguments[0].click();", open_button)
+            time.sleep(0.2)
+
+            domain_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-domain"]')
+            domain_input.clear()
+            domain_input.send_keys(login_domain)
+            time.sleep(0.2)
+
+            id_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-id"]')
+            id_input.clear()
+            id_input.send_keys(login_id)
+            time.sleep(0.2)
+
+            pwd_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-pwd"]')
+            pwd_input.clear()
+            pwd_input.send_keys(login_pw)
+            time.sleep(0.2)
+
+            save_domain = driver.find_element(By.XPATH, '//input[@id="savedomain"]')
+            driver.execute_script("arguments[0].click();", save_domain)
+            time.sleep(0.2)
+
+            login_button = driver.find_element(By.XPATH, '//input[@class="login-btn" and @value="로그인"]')
+            driver.execute_script("arguments[0].click();", login_button)
+            time.sleep(0.2)
+
+            # 로그인 성공 시 나오는 화면
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//body[@class="bgline"]')))
+            time.sleep(0.2)
+
+            self.close_ezadmin_notice_popups()
+
+        except Exception as e:
+            print(e)
+            raise Exception(f"이지어드민 로그인 실패")
+
+        finally:
+            driver.implicitly_wait(self.default_wait)
+
+    # 이지어드민 로그인 시 발생하는 팝업창을 모두 닫습니다.
+    def close_ezadmin_notice_popups(self):
+        driver = self.driver
+        try:
+            driver.implicitly_wait(1)
+
+            driver.execute_script("hide_board('internal_board');")
+            time.sleep(0.2)
+
+            driver.execute_script("hide_board('sys_notice_board');")
+            time.sleep(0.2)
+
+            # $x('//a[contains(text(), "팝업 전체 닫기")]')
+            close_all_popups = driver.find_element(By.XPATH, '//a[contains(text(), "팝업 전체 닫기")]')
+            driver.execute_script("arguments[0].click();", close_all_popups)
+            time.sleep(0.2)
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            driver.implicitly_wait(self.default_wait)
+
+    # 정산통계 -> 판매처별정산통계 화면으로 이동합니다.
+    def go_store_stats_menu(self):
+        driver = self.driver
+        driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F308")
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "판매처별정산통계")]'))
+        )
+        time.sleep(0.1)
 
     # 전체작업 시작
     def work_start(self):
@@ -118,12 +203,16 @@ class EzadminCrawlerProcess:
 
             target_date_row = self.get_target_date_row(self.guiDto.target_date)
 
+            self.ezadmin_login()
+
             for store_name in store_list:
                 print(f"{store_name} 작업 시작")
                 self.log_msg.emit(f"{store_name} 작업 시작")
 
                 try:
                     store_column_range = self.get_store_column_range(store_name)
+
+                    self.go_store_stats_menu()
 
                     print()
 

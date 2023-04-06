@@ -52,9 +52,12 @@ def get_chrome_driver(is_headless=False, is_secret=False):
     if is_secret:
         options.add_argument("incognito")  # 시크릿 모드
 
-    # options.add_argument("start-maximized")
-
-    driver = chromedriver_install(options)
+    chrome_ver = chromedriver_autoinstaller.get_chrome_version().split(".")[0]
+    try:
+        driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
+    except:
+        chromedriver_autoinstaller.install("./")
+        driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
 
     driver.implicitly_wait(10)  # 페이지가 로딩될 때 까지
     driver.set_page_load_timeout(10)  # 브라우저 작동 대기
