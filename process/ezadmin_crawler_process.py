@@ -75,10 +75,13 @@ class EzadminCrawlerProcess:
         for merged_cell in merged_cells:
             if merged_cell.start_cell.internal_value == store_name:
                 print(merged_cell.start_cell.internal_value)
-                store_column_range = merged_cell.coord
+                # store_column_range = merged_cell.coord
+                store_min_col = merged_cell.min_col
+                store_max_col = merged_cell.max_col
+                store_column_range = [store_min_col, store_max_col]
                 break
 
-        store_column_range = re.sub(r"\d+", "", store_column_range)
+        # store_column_range = re.sub(r"\d+", "", store_column_range)
         print(store_column_range)
         return store_column_range
 
