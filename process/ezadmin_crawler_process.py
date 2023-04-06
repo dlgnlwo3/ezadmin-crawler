@@ -374,7 +374,73 @@ class EzadminCrawlerProcess:
         except Exception as e:
             print(e)
 
+        # 취소수량
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.취소수량.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.취소수량.value
+            else:
+                sheet_coord = CommonStoreEnum.취소수량.value
+
+            self.sheet.cell(
+                row=target_date_row, column=store_min_col + sheet_coord
+            ).value = store_detail_dto.cancel_total_data_product_sum
+
+        except Exception as e:
+            print(e)
+
+        # 취소금액
+        try:
+            if store_detail_dto.store_name == "카페24":
+                raise Exception("카페24는 취소금액이 없습니다.")
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.취소금액.value
+            else:
+                sheet_coord = CommonStoreEnum.취소금액.value
+
+            self.sheet.cell(
+                row=target_date_row, column=store_min_col + sheet_coord
+            ).value = store_detail_dto.cancel_total_data_order_sum_amount
+
+        except Exception as e:
+            print(e)
+
+        # 반품수량
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.반품수량.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.반품수량.value
+            else:
+                sheet_coord = CommonStoreEnum.반품수량.value
+
+            self.sheet.cell(
+                row=target_date_row, column=store_min_col + sheet_coord
+            ).value = store_detail_dto.refund_total_data_product_sum
+
+        except Exception as e:
+            print(e)
+
+        # 반품금액
+        try:
+            if store_detail_dto.store_name == "카페24":
+                raise Exception("카페24는 반품금액이 없습니다.")
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.반품금액.value
+            else:
+                sheet_coord = CommonStoreEnum.반품금액.value
+
+            self.sheet.cell(
+                row=target_date_row, column=store_min_col + sheet_coord
+            ).value = store_detail_dto.refund_total_data_order_sum_amount
+
+        except Exception as e:
+            print(e)
+
         self.workbook.save(self.guiDto.stats_file)
+
+        self.log_msg.emit(f"{store_detail_dto.store_name} {self.guiDto.target_date} 저장 완료")
 
         time.sleep(1)
 
@@ -418,8 +484,6 @@ class EzadminCrawlerProcess:
                     self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name, "반품")
 
                     store_detail_dto = self.get_refund_from_result(store_detail_dto)
-
-                    print()
 
                 except Exception as e:
                     print(str(e))
