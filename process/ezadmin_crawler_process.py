@@ -183,7 +183,7 @@ class EzadminCrawlerProcess:
             driver.implicitly_wait(self.default_wait)
 
     # 정산통계 -> 판매처별정산통계 화면으로 이동합니다.
-    def go_store_stats_menu_and_search_date(self):
+    def go_store_calculate_menu_and_search_date(self):
         driver = self.driver
         driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F308")
         WebDriverWait(driver, 30).until(
@@ -210,7 +210,7 @@ class EzadminCrawlerProcess:
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
-    def get_calculate_from_tr(self, store_name: str, store_detail_dto: StoreDetailDto):
+    def get_calculate_from_result(self, store_name: str, store_detail_dto: StoreDetailDto):
         driver = self.driver
         store_name = StoreNameConverter().convert_store_name(store_name)
         print(store_name)
@@ -244,6 +244,88 @@ class EzadminCrawlerProcess:
 
         except Exception as e:
             print(f"{store_name} 검색 결과를 발견하지 못했습니다.")
+
+        return store_detail_dto
+
+    # 주문배송관리 -> 확장주문검색2 이동
+    def go_store_delivery_menu_and_search_date(self, store_name: str, order_state: str):
+        driver = self.driver
+        driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=DS00")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "확장주문검색2")]')))
+        time.sleep(0.1)
+
+        # 날짜 검색 타입
+        date_type_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[name="date_type"]'))
+        date_type_select.select_by_value("cancel_date")
+        time.sleep(0.2)
+
+        # 시작일
+        start_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="start_date"]')
+        start_date_input.clear()
+        start_date_input.send_keys(self.guiDto.target_date)
+
+        # 종료일
+        end_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="end_date"]')
+        end_date_input.clear()
+        end_date_input.send_keys(self.guiDto.target_date)
+
+        # C/S
+        cs_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[name="order_cs_sel"]'))
+        if order_state == "취소":
+            cs_select.select_by_visible_text("배송전 취소")
+        elif order_state == "반품":
+            cs_select.select_by_visible_text("배송후 취소")
+
+        # 판매처
+        store_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="str_shop_code"]'))
+        store_select.select_by_visible_text(store_name)
+        time.sleep(0.2)
+
+        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        driver.execute_script("arguments[0].click();", search_button)
+        time.sleep(3)
+
+    def get_cancel_from_result(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        time.sleep(0.2)
+
+        try:
+            # 상품수량
+            cancel_total_data_product_sum = driver.find_element(
+                By.CSS_SELECTOR, 'span[id="total_data_product_sum"]'
+            ).get_attribute("textContent")
+            store_detail_dto.cancel_total_data_product_sum = cancel_total_data_product_sum
+
+            # 판매금액
+            cancel_total_data_order_sum_amount = driver.find_element(
+                By.CSS_SELECTOR, 'span[id="total_data_order_sum_amount"]'
+            ).get_attribute("textContent")
+            store_detail_dto.cancel_total_data_order_sum_amount = cancel_total_data_order_sum_amount
+
+        except Exception as e:
+            print(f"검색 결과를 발견하지 못했습니다.")
+
+        return store_detail_dto
+
+    def get_refund_from_result(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        time.sleep(0.2)
+
+        try:
+            # 상품수량
+            refund_total_data_product_sum = driver.find_element(
+                By.CSS_SELECTOR, 'span[id="total_data_product_sum"]'
+            ).get_attribute("textContent")
+            store_detail_dto.refund_total_data_product_sum = refund_total_data_product_sum
+
+            # 판매금액
+            refund_total_data_order_sum_amount = driver.find_element(
+                By.CSS_SELECTOR, 'span[id="total_data_order_sum_amount"]'
+            ).get_attribute("textContent")
+            store_detail_dto.refund_total_data_order_sum_amount = refund_total_data_order_sum_amount
+
+        except Exception as e:
+            print(f"검색 결과를 발견하지 못했습니다.")
 
         return store_detail_dto
 
@@ -325,9 +407,19 @@ class EzadminCrawlerProcess:
                 try:
                     store_min_col = self.get_store_min_col(store_name)
 
-                    self.go_store_stats_menu_and_search_date()
+                    self.go_store_calculate_menu_and_search_date()
 
-                    store_detail_dto = self.get_calculate_from_tr(store_name, store_detail_dto)
+                    store_detail_dto = self.get_calculate_from_result(store_name, store_detail_dto)
+
+                    self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name, "취소")
+
+                    store_detail_dto = self.get_cancel_from_result(store_detail_dto)
+
+                    self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name, "반품")
+
+                    store_detail_dto = self.get_refund_from_result(store_detail_dto)
+
+                    print()
 
                 except Exception as e:
                     print(str(e))

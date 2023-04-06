@@ -8,6 +8,14 @@ class StoreDetailDto:
 
         self.__org_price = ""  # 상품원가
 
+        self.__cancel_total_data_product_sum = ""  # 취소수량
+
+        self.__cancel_total_data_order_sum_amount = ""  # 취소금액
+
+        self.__refund_total_data_product_sum = ""  # 반품수량
+
+        self.__refund_total_data_order_sum_amount = ""  # 반품금액
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -39,6 +47,38 @@ class StoreDetailDto:
     @org_price.setter
     def org_price(self, value: str):  # setter
         self.__org_price = value
+
+    @property
+    def cancel_total_data_product_sum(self):  # getter
+        return self.__cancel_total_data_product_sum
+
+    @cancel_total_data_product_sum.setter
+    def cancel_total_data_product_sum(self, value: str):  # setter
+        self.__cancel_total_data_product_sum = value
+
+    @property
+    def cancel_total_data_order_sum_amount(self):  # getter
+        return self.__cancel_total_data_order_sum_amount
+
+    @cancel_total_data_order_sum_amount.setter
+    def cancel_total_data_order_sum_amount(self, value: str):  # setter
+        self.__cancel_total_data_order_sum_amount = value
+
+    @property
+    def refund_total_data_product_sum(self):  # getter
+        return self.__refund_total_data_product_sum
+
+    @refund_total_data_product_sum.setter
+    def refund_total_data_product_sum(self, value: str):  # setter
+        self.__refund_total_data_product_sum = value
+
+    @property
+    def refund_total_data_order_sum_amount(self):  # getter
+        return self.__refund_total_data_order_sum_amount
+
+    @refund_total_data_order_sum_amount.setter
+    def refund_total_data_order_sum_amount(self, value: str):  # setter
+        self.__refund_total_data_order_sum_amount = value
 
     def to_print(self):
         print("상점이름", self.store_name)
