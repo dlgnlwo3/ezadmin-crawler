@@ -16,6 +16,8 @@ class StoreDetailDto:
 
         self.__refund_total_data_order_sum_amount = ""  # 반품금액
 
+        self.__delivery_result = ""  # 배송건수
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -30,7 +32,11 @@ class StoreDetailDto:
 
     @tot_products.setter
     def tot_products(self, value: str):  # setter
-        self.__tot_products = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__tot_products = int_value
 
     @property
     def tot_amount(self):  # getter
@@ -38,7 +44,11 @@ class StoreDetailDto:
 
     @tot_amount.setter
     def tot_amount(self, value: str):  # setter
-        self.__tot_amount = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__tot_amount = int_value
 
     @property
     def org_price(self):  # getter
@@ -46,7 +56,11 @@ class StoreDetailDto:
 
     @org_price.setter
     def org_price(self, value: str):  # setter
-        self.__org_price = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__org_price = int_value
 
     @property
     def cancel_total_data_product_sum(self):  # getter
@@ -54,7 +68,11 @@ class StoreDetailDto:
 
     @cancel_total_data_product_sum.setter
     def cancel_total_data_product_sum(self, value: str):  # setter
-        self.__cancel_total_data_product_sum = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__cancel_total_data_product_sum = int_value
 
     @property
     def cancel_total_data_order_sum_amount(self):  # getter
@@ -62,7 +80,11 @@ class StoreDetailDto:
 
     @cancel_total_data_order_sum_amount.setter
     def cancel_total_data_order_sum_amount(self, value: str):  # setter
-        self.__cancel_total_data_order_sum_amount = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__cancel_total_data_order_sum_amount = int_value
 
     @property
     def refund_total_data_product_sum(self):  # getter
@@ -70,7 +92,11 @@ class StoreDetailDto:
 
     @refund_total_data_product_sum.setter
     def refund_total_data_product_sum(self, value: str):  # setter
-        self.__refund_total_data_product_sum = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__refund_total_data_product_sum = int_value
 
     @property
     def refund_total_data_order_sum_amount(self):  # getter
@@ -78,7 +104,23 @@ class StoreDetailDto:
 
     @refund_total_data_order_sum_amount.setter
     def refund_total_data_order_sum_amount(self, value: str):  # setter
-        self.__refund_total_data_order_sum_amount = value
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__refund_total_data_order_sum_amount = int_value
+
+    @property
+    def delivery_result(self):  # getter
+        return self.__delivery_result
+
+    @delivery_result.setter
+    def delivery_result(self, value: str):  # setter
+        int_value = 0
+        if value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__delivery_result = int_value
 
     def to_print(self):
         print("상점이름", self.store_name)

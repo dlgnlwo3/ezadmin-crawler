@@ -7,6 +7,8 @@ if 1 == 1:
     warnings.simplefilter("ignore", UserWarning)
     sys.coinit_flags = 2
 
+from enums.store_name_enum import StoreNameEnum
+
 
 class StoreNameConverter:
     def __init__(self):
@@ -17,40 +19,22 @@ class StoreNameConverter:
         print(f"{store_name}")
 
         if store_name == "11번가":
-            store_name = "11번가"
+            store_name = StoreNameEnum.ElevenStreet.value
         elif store_name == "지마켓":
-            store_name = "G마켓"
-        # elif store_name == "":
-        #     store_name = "R2O"
-        # elif store_name == "":
-        #     store_name = "개별주문"
-        # elif store_name == "":
-        #     store_name = "그립"
+            store_name = StoreNameEnum.GMarket.value
         elif store_name == "브랜디":
-            store_name = "브랜디"
+            store_name = StoreNameEnum.Brandi.value
         elif store_name == "브리치":
-            store_name = "브리치"
-        # elif store_name == "":
-        #     store_name = "쇼핑엔티"
-        # elif store_name == "":
-        #     store_name = "스토어팜"
-        # elif store_name == "":
-        #     store_name = "에이블리"
+            store_name = StoreNameEnum.Brich.value
         elif store_name == "위메프":
-            store_name = "위메이크프라이스 2.0"
-        # elif store_name == "":
-        #     store_name = "직진배송"
+            store_name = StoreNameEnum.WeMakePrice.value
         elif store_name == "카카오":
-            store_name = "카카오톡스토어"
+            store_name = StoreNameEnum.KakaoTalkStore.value
         elif store_name == "자사몰(까페24기준)" or store_name == "카페24" or store_name == "까페24":
-            store_name = "카페24"
+            store_name = StoreNameEnum.Cafe24.value
         elif store_name == "쿠팡":
-            store_name = "쿠팡(자동)"
-        # elif store_name == "":
-        #     store_name = "쿠팡로켓배송(송장)"
+            store_name = StoreNameEnum.Coupang.value
         elif store_name == "티몬":
-            store_name = "티몬(자동)"
-        # elif store_name == "":
-        #     store_name = "티켓몬스터(자동) #4"
+            store_name = StoreNameEnum.TicketMonster.value
 
         return store_name

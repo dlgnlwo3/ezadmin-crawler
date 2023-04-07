@@ -12,7 +12,9 @@ from common.utils import global_log_append
 from common.chrome import open_browser, get_chrome_driver
 from common.selenium_activities import close_new_tabs, alert_ok_try
 from common.account_file import AccountFile
-from common.store_column_enum import CommonStoreEnum, Cafe24Enum, ElevenStreetEnum
+
+
+from enums.store_column_enum import CommonStoreEnum, Cafe24Enum, ElevenStreetEnum
 
 from features.convert_store_name import StoreNameConverter
 
@@ -125,16 +127,19 @@ class EzadminCrawlerProcess:
 
             domain_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-domain"]')
             domain_input.clear()
+            time.sleep(0.2)
             domain_input.send_keys(login_domain)
             time.sleep(0.2)
 
             id_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-id"]')
             id_input.clear()
+            time.sleep(0.2)
             id_input.send_keys(login_id)
             time.sleep(0.2)
 
             pwd_input = driver.find_element(By.CSS_SELECTOR, 'input[id="login-pwd"]')
             pwd_input.clear()
+            time.sleep(0.2)
             pwd_input.send_keys(login_pw)
             time.sleep(0.2)
 
@@ -248,7 +253,7 @@ class EzadminCrawlerProcess:
         return store_detail_dto
 
     # 주문배송관리 -> 확장주문검색2 이동
-    def go_store_delivery_menu_and_search_date(self, store_name: str, order_state: str):
+    def go_store_cancel_menu_and_search_date(self, store_name: str, order_state: str):
         driver = self.driver
         driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=DS00")
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "확장주문검색2")]')))
@@ -329,6 +334,49 @@ class EzadminCrawlerProcess:
 
         return store_detail_dto
 
+    # 정산통계 -> 배송통계 이동
+    def go_store_delivery_menu_and_search_date(self, store_name: str):
+        driver = self.driver
+        driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F500")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "배송통계")]')))
+        time.sleep(0.1)
+
+        # 판매처
+        store_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="str_shop_code"]'))
+        store_select.select_by_visible_text(store_name)
+        time.sleep(0.2)
+
+        # 시작일
+        start_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="start_date"]')
+        start_date_input.clear()
+        start_date_input.send_keys(self.guiDto.target_date)
+
+        # 종료일
+        end_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="end_date"]')
+        end_date_input.clear()
+        end_date_input.send_keys(self.guiDto.target_date)
+
+        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        driver.execute_script("arguments[0].click();", search_button)
+        time.sleep(3)
+
+    def get_delivery_from_result(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        time.sleep(0.2)
+
+        try:
+            # 전체 결과 td
+            # $x('//tr[./td[contains(text(), "2023-04-06")]]/td/a[contains(@href, "모두")]')
+            delivery_result = driver.find_element(
+                By.XPATH, f'//tr[./td[contains(text(), "{self.guiDto.target_date}")]]/td/a[contains(@href, "모두")]'
+            ).get_attribute("textContent")
+            store_detail_dto.delivery_result = delivery_result
+
+        except Exception as e:
+            print(f"검색 결과를 발견하지 못했습니다.")
+
+        return store_detail_dto
+
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
         try:
@@ -339,9 +387,9 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.주문수량.value
 
-            self.sheet.cell(
-                row=target_date_row, column=store_min_col + sheet_coord
-            ).value = store_detail_dto.tot_products
+            tot_products_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            print(f"{store_detail_dto.store_name} 원본 주문수량: {tot_products_cell.value}")
+            tot_products_cell.value = store_detail_dto.tot_products
 
         except Exception as e:
             print(e)
@@ -355,7 +403,8 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.주문금액.value
 
-            self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord).value = store_detail_dto.tot_amount
+            tot_amount_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            tot_amount_cell.value = store_detail_dto.tot_amount
 
         except Exception as e:
             print(e)
@@ -369,7 +418,8 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.원가금액.value
 
-            self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord).value = store_detail_dto.org_price
+            org_price_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            org_price_cell.value = store_detail_dto.org_price
 
         except Exception as e:
             print(e)
@@ -383,9 +433,10 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.취소수량.value
 
-            self.sheet.cell(
+            cancel_total_data_product_sum_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
-            ).value = store_detail_dto.cancel_total_data_product_sum
+            )
+            cancel_total_data_product_sum_cell.value = store_detail_dto.cancel_total_data_product_sum
 
         except Exception as e:
             print(e)
@@ -399,9 +450,10 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.취소금액.value
 
-            self.sheet.cell(
+            cancel_total_data_order_sum_amount_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
-            ).value = store_detail_dto.cancel_total_data_order_sum_amount
+            )
+            cancel_total_data_order_sum_amount_cell.value = store_detail_dto.cancel_total_data_order_sum_amount
 
         except Exception as e:
             print(e)
@@ -415,9 +467,10 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.반품수량.value
 
-            self.sheet.cell(
+            refund_total_data_product_sum_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
-            ).value = store_detail_dto.refund_total_data_product_sum
+            )
+            refund_total_data_product_sum_cell.value = store_detail_dto.refund_total_data_product_sum
 
         except Exception as e:
             print(e)
@@ -431,18 +484,34 @@ class EzadminCrawlerProcess:
             else:
                 sheet_coord = CommonStoreEnum.반품금액.value
 
-            self.sheet.cell(
+            refund_total_data_order_sum_amount_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
-            ).value = store_detail_dto.refund_total_data_order_sum_amount
+            )
+            refund_total_data_order_sum_amount_cell.value = store_detail_dto.refund_total_data_order_sum_amount
+
+        except Exception as e:
+            print(e)
+
+        # 배송건수
+        try:
+            if store_detail_dto.store_name == "카페24":
+                sheet_coord = Cafe24Enum.배송건수.value
+            elif store_detail_dto.store_name == "11번가":
+                sheet_coord = ElevenStreetEnum.배송건수.value
+            else:
+                sheet_coord = CommonStoreEnum.배송건수.value
+
+            delivery_result_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            delivery_result_cell.value = store_detail_dto.delivery_result
 
         except Exception as e:
             print(e)
 
         self.workbook.save(self.guiDto.stats_file)
 
-        self.log_msg.emit(f"{store_detail_dto.store_name} {self.guiDto.target_date} 저장 완료")
+        self.log_msg.emit(f"[{self.guiDto.target_date}] {store_detail_dto.store_name} 저장 완료")
 
-        time.sleep(1)
+        print(f"[{self.guiDto.target_date}] {store_detail_dto.store_name} 저장 완료")
 
     # 전체작업 시작
     def work_start(self):
@@ -477,13 +546,17 @@ class EzadminCrawlerProcess:
 
                     store_detail_dto = self.get_calculate_from_result(store_name, store_detail_dto)
 
-                    self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name, "취소")
+                    self.go_store_cancel_menu_and_search_date(store_detail_dto.store_name, "취소")
 
                     store_detail_dto = self.get_cancel_from_result(store_detail_dto)
 
-                    self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name, "반품")
+                    self.go_store_cancel_menu_and_search_date(store_detail_dto.store_name, "반품")
 
                     store_detail_dto = self.get_refund_from_result(store_detail_dto)
+
+                    self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name)
+
+                    store_detail_dto = self.get_delivery_from_result(store_detail_dto)
 
                 except Exception as e:
                     print(str(e))

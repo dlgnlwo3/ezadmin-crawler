@@ -157,7 +157,7 @@ class EzadminCrawlerTab(QWidget):
 
         # 작업 날짜 선택
         date_edit_groupbox = QGroupBox("날짜 선택")
-        self.date_edit = QDateEdit(QDate.currentDate())
+        self.date_edit = QDateEdit(QDate.currentDate().addDays(-1))
         self.date_edit.setGeometry(100, 100, 150, 40)
 
         date_edit_inner_layout = QHBoxLayout()
