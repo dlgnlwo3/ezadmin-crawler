@@ -52,6 +52,8 @@ def get_chrome_driver(is_headless=False, is_secret=False):
     if is_secret:
         options.add_argument("incognito")  # 시크릿 모드
 
+    options.add_argument("--disable-popup-blocking")  # 팝업창을 허용하는 옵션
+
     chrome_ver = chromedriver_autoinstaller.get_chrome_version().split(".")[0]
     try:
         driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
@@ -77,6 +79,7 @@ def get_chrome_driver_new(is_headless=False, is_secret=False, tor=False, move_to
     if tor:
         options.add_argument("--proxy-server=socks5://127.0.0.1:9150")  # 토르 적용
 
+    options.add_argument("--disable-popup-blocking")  # 팝업창을 허용하는 옵션
     options.add_argument("--disable-gpu")
     options.add_argument("lang=ko_KR")
     # options.add_argument(

@@ -18,6 +18,10 @@ class StoreDetailDto:
 
         self.__delivery_result = ""  # 배송건수
 
+        self.__zigzag_cost = ""  # 지그재그
+
+        self.__mypick_cost = ""  # 마이픽쿠폰
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -33,7 +37,11 @@ class StoreDetailDto:
     @tot_products.setter
     def tot_products(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__tot_products = int_value
@@ -45,7 +53,11 @@ class StoreDetailDto:
     @tot_amount.setter
     def tot_amount(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__tot_amount = int_value
@@ -57,7 +69,11 @@ class StoreDetailDto:
     @org_price.setter
     def org_price(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__org_price = int_value
@@ -69,7 +85,11 @@ class StoreDetailDto:
     @cancel_total_data_product_sum.setter
     def cancel_total_data_product_sum(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__cancel_total_data_product_sum = int_value
@@ -81,7 +101,10 @@ class StoreDetailDto:
     @cancel_total_data_order_sum_amount.setter
     def cancel_total_data_order_sum_amount(self, value: str):  # setter
         int_value = 0
-        if value != "":
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__cancel_total_data_order_sum_amount = int_value
@@ -93,7 +116,10 @@ class StoreDetailDto:
     @refund_total_data_product_sum.setter
     def refund_total_data_product_sum(self, value: str):  # setter
         int_value = 0
-        if value != "":
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__refund_total_data_product_sum = int_value
@@ -105,7 +131,11 @@ class StoreDetailDto:
     @refund_total_data_order_sum_amount.setter
     def refund_total_data_order_sum_amount(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__refund_total_data_order_sum_amount = int_value
@@ -117,10 +147,47 @@ class StoreDetailDto:
     @delivery_result.setter
     def delivery_result(self, value: str):  # setter
         int_value = 0
-        if value != "":
+
+        if value == 0:
+            pass
+
+        elif value != "":
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__delivery_result = int_value
+
+    @property
+    def zigzag_cost(self):  # getter
+        return self.__zigzag_cost
+
+    @zigzag_cost.setter
+    def zigzag_cost(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+
+        self.__zigzag_cost = int_value
+
+    @property
+    def mypick_cost(self):  # getter
+        return self.__mypick_cost
+
+    @mypick_cost.setter
+    def mypick_cost(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__mypick_cost = int_value
 
     def to_print(self):
         print("상점이름", self.store_name)

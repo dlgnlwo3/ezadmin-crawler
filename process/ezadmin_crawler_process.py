@@ -379,27 +379,164 @@ class EzadminCrawlerProcess:
         return store_detail_dto
 
     def get_discount_cost_from_store(self, store_detail_dto: StoreDetailDto):
-        driver = self.driver
-        print(store_detail_dto.store_name)
-
         if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
-            pass
+            store_detail_dto = self.go_zigzag_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
-            pass
+            print(self.dict_accounts["위메프"]["URL"])
+            # store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.Coupang.value:
-            pass
+            print(self.dict_accounts["쿠팡"]["URL"])
+            # store_detail_dto = self.go_coupang_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.TicketMonster.value:
-            pass
+            print(self.dict_accounts["티몬"]["URL"])
+            # store_detail_dto = self.go_ticketmonster_and_search_discount_cost(store_detail_dto)
 
         else:
             return store_detail_dto
 
-        print()
-
         return store_detail_dto
+
+    def go_zigzag_and_search_discount_cost(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        login_url = self.dict_accounts["지그재그"]["URL"]
+
+        try:
+            # 새 탭에서 열기
+            driver.execute_script(f"window.open('{login_url}');")
+            driver.switch_to.window(driver.window_handles[1])
+
+            self.zigzag_login()
+
+            # 지그재그
+            try:
+                zigzag_cost = self.get_zigzag_cost()
+            except Exception as e:
+                print(e)
+                print(f"지그재그 검색 실패")
+                zigzag_cost = 0
+            finally:
+                store_detail_dto.zigzag_cost = zigzag_cost
+
+            # 마이픽쿠폰
+            try:
+                mypick_cost = self.get_mypick_cost()
+            except Exception as e:
+                print(e)
+                print(f"마이픽쿠폰 검색 실패")
+                mypick_cost = 0
+            finally:
+                store_detail_dto.mypick_cost = mypick_cost
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            # 원래 탭으로 돌아오기
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            time.sleep(0.5)
+            return store_detail_dto
+
+    def zigzag_login(self):
+        driver = self.driver
+
+        try:
+            # 이전 로그인 세션이 남아있을 경우 바로 스토어 선택 화면으로 이동합니다.
+            WebDriverWait(driver, 5).until(
+                EC.visibility_of_element_located((By.XPATH, '//h1[contains(text(), "파트너센터 로그인")]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            pass
+
+        try:
+            driver.implicitly_wait(1)
+
+            login_id = self.dict_accounts["지그재그"]["ID"]
+            login_pw = self.dict_accounts["지그재그"]["PW"]
+
+            id_input = driver.find_element(By.XPATH, '//input[@placeholder="이메일"]')
+            id_input.clear()
+            time.sleep(0.2)
+            id_input.send_keys(login_id)
+
+            pw_input = driver.find_element(By.XPATH, '//input[@placeholder="비밀번호"]')
+            pw_input.clear()
+            time.sleep(0.2)
+            pw_input.send_keys(login_pw)
+
+            login_button = driver.find_element(By.XPATH, '//button[contains(text(), "로그인")]')
+            login_button.click()
+            time.sleep(0.2)
+
+        except Exception as e:
+            print("로그인 정보 입력 실패")
+
+        finally:
+            driver.implicitly_wait(self.default_wait)
+
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//div[contains(text(), "코코블랑")]'))
+            )
+            time.sleep(0.2)
+
+            store_link = driver.find_element(By.XPATH, '//a[contains(@href, "cocoblanc")]')
+            driver.execute_script("arguments[0].click();", store_link)
+            time.sleep(0.2)
+
+            WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//span[contains(text(), "광고 관리")]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            print(e)
+            raise Exception("지그재그 로그인 실패")
+
+    def get_zigzag_cost(self):
+        driver = self.driver
+        search_date = self.guiDto.target_date.replace("-", "")
+        driver.get(
+            f"https://partners.kakaostyle.com/shop/cocoblanc/wallet?date_from_ymd={search_date}&date_to_ymd={search_date}&type=payment"
+        )
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "광고 코인 총 잔액")]'))
+        )
+        time.sleep(0.2)
+
+        td_date = self.guiDto.target_date.replace("-", ".")
+        result_trs = driver.find_elements(By.XPATH, f'//tr[./td[text()="{td_date}"]]')
+        target_tr = result_trs[-1]
+
+        zigzag_cost = (
+            target_tr.find_element(By.CSS_SELECTOR, "td:nth-child(12)").get_attribute("textContent").replace("원", "")
+        )
+
+        return zigzag_cost
+
+    def get_mypick_cost(self):
+        driver = self.driver
+        driver.get(f"https://partners.kakaostyle.com/shop/cocoblanc/coupon/my_pick/list")
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, '//h1[contains(text(), "마이픽쿠폰 관리")]'))
+        )
+        time.sleep(0.2)
+
+        # $x('//table/tbody/tr')
+        # 현재 검색 결과가 없음
+        mypick_trs = driver.find_elements(By.XPATH, "//table/tbody/tr")
+
+        mypick_cost = 0
+        if len(mypick_trs) < 0:
+            print("마이픽쿠폰 작업")
+            mypick_cost = 0
+
+        return mypick_cost
 
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
@@ -529,6 +666,36 @@ class EzadminCrawlerProcess:
                 store_detail_dto.refund_total_data_order_sum_amount
                 + store_detail_dto.cancel_total_data_order_sum_amount
             )
+
+        except Exception as e:
+            print(e)
+
+        # 지그재그 (카페24만 기록)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                sheet_coord = Cafe24Enum.광고비지그재그.value
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                raise Exception("지그재그가 없습니다.")
+            else:
+                raise Exception("지그재그가 없습니다.")
+
+            zigzag_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            zigzag_cost_cell.value = store_detail_dto.zigzag_cost
+
+        except Exception as e:
+            print(e)
+
+        # 마이픽쿠폰 (카페24만 기록)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                sheet_coord = Cafe24Enum.광고비마이픽쿠폰.value
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                raise Exception("마이픽쿠폰이 없습니다.")
+            else:
+                raise Exception("마이픽쿠폰이 없습니다.")
+
+            mypick_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            mypick_cost_cell.value = store_detail_dto.mypick_cost
 
         except Exception as e:
             print(e)
