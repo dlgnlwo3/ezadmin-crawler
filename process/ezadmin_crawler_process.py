@@ -383,12 +383,11 @@ class EzadminCrawlerProcess:
             store_detail_dto = self.go_zigzag_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
-            print(self.dict_accounts["위메프"]["URL"])
-            store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
+            pass
+            # store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.Coupang.value:
-            print(self.dict_accounts["쿠팡"]["URL"])
-            # store_detail_dto = self.go_coupang_and_search_discount_cost(store_detail_dto)
+            store_detail_dto = self.go_coupang_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.TicketMonster.value:
             print(self.dict_accounts["티몬"]["URL"])
@@ -605,6 +604,78 @@ class EzadminCrawlerProcess:
         except Exception as e:
             print(e)
             raise Exception("위메프 로그인 실패")
+
+    def go_coupang_and_search_discount_cost(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        login_url = self.dict_accounts["쿠팡"]["URL"]
+
+        try:
+            # 새 탭에서 열기
+            driver.execute_script(f"window.open('{login_url}');")
+            driver.switch_to.window(driver.window_handles[1])
+
+            self.coupang_login()
+
+            print()
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            # 원래 탭으로 돌아오기
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            time.sleep(0.5)
+            return store_detail_dto
+
+    def coupang_login(self):
+        driver = self.driver
+
+        try:
+            # 이전 로그인 세션이 남아있을 경우 바로 스토어 화면으로 이동합니다.
+            WebDriverWait(driver, 5).until(
+                EC.visibility_of_element_located((By.XPATH, '//h1[contains(text(), "coupang")]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            pass
+
+        try:
+            driver.implicitly_wait(1)
+
+            login_id = self.dict_accounts["쿠팡"]["ID"]
+            login_pw = self.dict_accounts["쿠팡"]["PW"]
+
+            id_input = driver.find_element(By.XPATH, '//input[@id="username"]')
+            id_input.clear()
+            time.sleep(0.2)
+            id_input.send_keys(login_id)
+
+            pw_input = driver.find_element(By.XPATH, '//input[@id="password"]')
+            pw_input.clear()
+            time.sleep(0.2)
+            pw_input.send_keys(login_pw)
+
+            login_button = driver.find_element(By.XPATH, '//input[contains(@id, "login")]')
+            login_button.click()
+            time.sleep(0.2)
+
+        except Exception as e:
+            print("로그인 정보 입력 실패")
+
+        finally:
+            driver.implicitly_wait(self.default_wait)
+
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//button[contains(text(), "Coupang Wing")]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            print(e)
+            raise Exception("쿠팡 로그인 실패")
 
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
