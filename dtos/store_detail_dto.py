@@ -22,6 +22,8 @@ class StoreDetailDto:
 
         self.__mypick_cost = ""  # 마이픽쿠폰
 
+        self.__coupon_cost = ""  # 쿠폰비
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -188,6 +190,22 @@ class StoreDetailDto:
             int_value = value.replace(",", "")
             int_value = int(int_value)
         self.__mypick_cost = int_value
+
+    @property
+    def coupon_cost(self):  # getter
+        return self.__coupon_cost
+
+    @coupon_cost.setter
+    def coupon_cost(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+            int_value = int(int_value)
+        self.__coupon_cost = int_value
 
     def to_print(self):
         print("상점이름", self.store_name)

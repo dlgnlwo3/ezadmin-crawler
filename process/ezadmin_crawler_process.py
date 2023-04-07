@@ -616,7 +616,15 @@ class EzadminCrawlerProcess:
 
             self.coupang_login()
 
-            print()
+            # 쿠폰
+            try:
+                coupon_cost = self.coupang_get_coupon_cost()
+            except Exception as e:
+                print(e)
+                print(f"쿠폰 검색 실패")
+                coupon_cost = 0
+            finally:
+                store_detail_dto.coupon_cost = coupon_cost
 
         except Exception as e:
             print(e)
@@ -676,6 +684,19 @@ class EzadminCrawlerProcess:
         except Exception as e:
             print(e)
             raise Exception("쿠팡 로그인 실패")
+
+    def coupang_get_coupon_cost(self):
+        driver = self.driver
+        driver.get(
+            f"https://wing.coupang.com/tenants/finance/wing/goods/purchase-report?from={self.guiDto.target_date}&to={self.guiDto.target_date}"
+        )
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//h4[contains(text(), "매출내역")]')))
+        time.sleep(0.2)
+
+        coupon_cost = driver.find_element(By.XPATH, '//td[contains(text(), "합계:")]').get_attribute("textContent")
+        coupon_cost = coupon_cost.replace("합계:", "")
+
+        return coupon_cost
 
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
