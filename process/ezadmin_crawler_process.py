@@ -378,6 +378,29 @@ class EzadminCrawlerProcess:
 
         return store_detail_dto
 
+    def get_discount_cost_from_store(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        print(store_detail_dto.store_name)
+
+        if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+            pass
+
+        elif store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
+            pass
+
+        elif store_detail_dto.store_name == StoreNameEnum.Coupang.value:
+            pass
+
+        elif store_detail_dto.store_name == StoreNameEnum.TicketMonster.value:
+            pass
+
+        else:
+            return store_detail_dto
+
+        print()
+
+        return store_detail_dto
+
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
         try:
@@ -575,6 +598,8 @@ class EzadminCrawlerProcess:
                     self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name)
 
                     store_detail_dto = self.get_delivery_from_result(store_detail_dto)
+
+                    store_detail_dto = self.get_discount_cost_from_store(store_detail_dto)
 
                 except Exception as e:
                     print(str(e))
