@@ -15,6 +15,7 @@ from common.account_file import AccountFile
 
 
 from enums.store_column_enum import CommonStoreEnum, Cafe24Enum, ElevenStreetEnum
+from enums.store_name_enum import StoreNameEnum
 
 from features.convert_store_name import StoreNameConverter
 
@@ -380,15 +381,14 @@ class EzadminCrawlerProcess:
     def update_excel_from_dto(self, target_date_row, store_min_col, store_detail_dto: StoreDetailDto):
         # 주문수량
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.주문수량.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.주문수량.value
             else:
                 sheet_coord = CommonStoreEnum.주문수량.value
 
             tot_products_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
-            print(f"{store_detail_dto.store_name} 원본 주문수량: {tot_products_cell.value}")
             tot_products_cell.value = store_detail_dto.tot_products
 
         except Exception as e:
@@ -396,9 +396,9 @@ class EzadminCrawlerProcess:
 
         # 주문금액
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.주문금액.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.주문금액.value
             else:
                 sheet_coord = CommonStoreEnum.주문금액.value
@@ -411,9 +411,9 @@ class EzadminCrawlerProcess:
 
         # 원가금액
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.원가금액.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.원가금액.value
             else:
                 sheet_coord = CommonStoreEnum.원가금액.value
@@ -426,9 +426,9 @@ class EzadminCrawlerProcess:
 
         # 취소수량
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.취소수량.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.취소수량.value
             else:
                 sheet_coord = CommonStoreEnum.취소수량.value
@@ -443,9 +443,9 @@ class EzadminCrawlerProcess:
 
         # 취소금액
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 raise Exception("카페24는 취소금액이 없습니다.")
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.취소금액.value
             else:
                 sheet_coord = CommonStoreEnum.취소금액.value
@@ -460,9 +460,9 @@ class EzadminCrawlerProcess:
 
         # 반품수량
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.반품수량.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.반품수량.value
             else:
                 sheet_coord = CommonStoreEnum.반품수량.value
@@ -477,9 +477,9 @@ class EzadminCrawlerProcess:
 
         # 반품금액
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 raise Exception("카페24는 반품금액이 없습니다.")
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.반품금액.value
             else:
                 sheet_coord = CommonStoreEnum.반품금액.value
@@ -492,11 +492,29 @@ class EzadminCrawlerProcess:
         except Exception as e:
             print(e)
 
+        # 환불금액 = 취소금액 + 반품금액 (카페24만 기록)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                sheet_coord = Cafe24Enum.환불금액.value
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                raise Exception("환불금액이 없습니다.")
+            else:
+                raise Exception("환불금액이 없습니다.")
+
+            total_cancel_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            total_cancel_cell.value = (
+                store_detail_dto.refund_total_data_order_sum_amount
+                + store_detail_dto.cancel_total_data_order_sum_amount
+            )
+
+        except Exception as e:
+            print(e)
+
         # 배송건수
         try:
-            if store_detail_dto.store_name == "카페24":
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
                 sheet_coord = Cafe24Enum.배송건수.value
-            elif store_detail_dto.store_name == "11번가":
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
                 sheet_coord = ElevenStreetEnum.배송건수.value
             else:
                 sheet_coord = CommonStoreEnum.배송건수.value

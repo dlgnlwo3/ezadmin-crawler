@@ -17,6 +17,7 @@ class StoreNameEnum(Enum):
     WeMakePrice = "위메이크프라이스 2.0"
     Coupang = "쿠팡(자동)"
     TicketMonster = "티몬(자동)"
+    ZigZag = "지그재그"
 
 
 if __name__ == "__main__":

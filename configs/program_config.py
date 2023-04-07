@@ -27,16 +27,16 @@ class ProgramConfig:
         if os.path.isdir(self.program_path) == False:
             os.mkdir(self.program_path)
 
-        # output폴더
-        if not os.path.isdir(self.output_folder_name):
-            os.mkdir(self.output_folder_name)
+        # # output폴더
+        # if not os.path.isdir(self.output_folder_name):
+        #     os.mkdir(self.output_folder_name)
 
-        # 오늘자 ouptut폴더
-        self.today_output_folder = os.path.join(
-            os.getcwd(), self.output_folder_name, datetime.today().strftime("%Y%m%d")
-        )
-        if not os.path.isdir(self.today_output_folder):
-            os.mkdir(self.today_output_folder)
+        # # 오늘자 ouptut폴더
+        # self.today_output_folder = os.path.join(
+        #     os.getcwd(), self.output_folder_name, datetime.today().strftime("%Y%m%d")
+        # )
+        # if not os.path.isdir(self.today_output_folder):
+        #     os.mkdir(self.today_output_folder)
 
-        if not os.path.isdir(self.log_folder_path):
-            os.mkdir(self.log_folder_path)
+        # if not os.path.isdir(self.log_folder_path):
+        #     os.mkdir(self.log_folder_path)
