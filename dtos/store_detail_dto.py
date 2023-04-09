@@ -45,7 +45,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__tot_products = int_value
 
     @property
@@ -61,7 +61,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__tot_amount = int_value
 
     @property
@@ -77,7 +77,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__org_price = int_value
 
     @property
@@ -93,7 +93,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__cancel_total_data_product_sum = int_value
 
     @property
@@ -108,7 +108,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__cancel_total_data_order_sum_amount = int_value
 
     @property
@@ -123,7 +123,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__refund_total_data_product_sum = int_value
 
     @property
@@ -139,7 +139,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__refund_total_data_order_sum_amount = int_value
 
     @property
@@ -155,7 +155,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__delivery_result = int_value
 
     @property
@@ -171,7 +171,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
 
         self.__zigzag_cost = int_value
 
@@ -188,7 +188,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__mypick_cost = int_value
 
     @property
@@ -204,7 +204,7 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-            int_value = int(int_value)
+        int_value = int(int_value)
         self.__coupon_cost = int_value
 
     def to_print(self):

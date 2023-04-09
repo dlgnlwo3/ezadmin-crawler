@@ -383,8 +383,7 @@ class EzadminCrawlerProcess:
             store_detail_dto = self.go_zigzag_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
-            pass
-            # store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
+            store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.Coupang.value:
             store_detail_dto = self.go_coupang_and_search_discount_cost(store_detail_dto)
@@ -709,10 +708,12 @@ class EzadminCrawlerProcess:
                 sheet_coord = CommonStoreEnum.주문수량.value
 
             tot_products_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = tot_products_cell.value
             tot_products_cell.value = store_detail_dto.tot_products
 
         except Exception as e:
             print(e)
+            tot_products_cell.value = original_value
 
         # 주문금액
         try:
@@ -724,10 +725,12 @@ class EzadminCrawlerProcess:
                 sheet_coord = CommonStoreEnum.주문금액.value
 
             tot_amount_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = tot_amount_cell.value
             tot_amount_cell.value = store_detail_dto.tot_amount
 
         except Exception as e:
             print(e)
+            tot_amount_cell.value = original_value
 
         # 원가금액
         try:
@@ -739,10 +742,12 @@ class EzadminCrawlerProcess:
                 sheet_coord = CommonStoreEnum.원가금액.value
 
             org_price_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = org_price_cell.value
             org_price_cell.value = store_detail_dto.org_price
 
         except Exception as e:
             print(e)
+            org_price_cell.value = original_value
 
         # 취소수량
         try:
@@ -756,10 +761,12 @@ class EzadminCrawlerProcess:
             cancel_total_data_product_sum_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
             )
+            original_value = cancel_total_data_product_sum_cell.value
             cancel_total_data_product_sum_cell.value = store_detail_dto.cancel_total_data_product_sum
 
         except Exception as e:
             print(e)
+            cancel_total_data_product_sum_cell.value = original_value
 
         # 취소금액
         try:
@@ -773,10 +780,15 @@ class EzadminCrawlerProcess:
             cancel_total_data_order_sum_amount_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
             )
+            original_value = cancel_total_data_order_sum_amount_cell.value
             cancel_total_data_order_sum_amount_cell.value = store_detail_dto.cancel_total_data_order_sum_amount
 
         except Exception as e:
             print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                cancel_total_data_order_sum_amount_cell.value = original_value
 
         # 반품수량
         try:
@@ -790,10 +802,12 @@ class EzadminCrawlerProcess:
             refund_total_data_product_sum_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
             )
+            original_value = refund_total_data_product_sum_cell.value
             refund_total_data_product_sum_cell.value = store_detail_dto.refund_total_data_product_sum
 
         except Exception as e:
             print(e)
+            refund_total_data_product_sum_cell.value = original_value
 
         # 반품금액
         try:
@@ -807,10 +821,15 @@ class EzadminCrawlerProcess:
             refund_total_data_order_sum_amount_cell = self.sheet.cell(
                 row=target_date_row, column=store_min_col + sheet_coord
             )
+            original_value = refund_total_data_order_sum_amount_cell.value
             refund_total_data_order_sum_amount_cell.value = store_detail_dto.refund_total_data_order_sum_amount
 
         except Exception as e:
             print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                refund_total_data_order_sum_amount_cell.value = original_value
 
         # 환불금액 = 취소금액 + 반품금액 (카페24만 기록)
         try:
@@ -822,6 +841,7 @@ class EzadminCrawlerProcess:
                 raise Exception("환불금액이 없습니다.")
 
             total_cancel_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = total_cancel_cell.value
             total_cancel_cell.value = (
                 store_detail_dto.refund_total_data_order_sum_amount
                 + store_detail_dto.cancel_total_data_order_sum_amount
@@ -829,6 +849,10 @@ class EzadminCrawlerProcess:
 
         except Exception as e:
             print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                total_cancel_cell.value = original_value
 
         # 지그재그 (카페24만 기록)
         try:
@@ -840,10 +864,15 @@ class EzadminCrawlerProcess:
                 raise Exception("지그재그가 없습니다.")
 
             zigzag_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = zigzag_cost_cell.value
             zigzag_cost_cell.value = store_detail_dto.zigzag_cost
 
         except Exception as e:
             print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                zigzag_cost_cell.value = original_value
 
         # 마이픽쿠폰 (카페24만 기록)
         try:
@@ -855,10 +884,15 @@ class EzadminCrawlerProcess:
                 raise Exception("마이픽쿠폰이 없습니다.")
 
             mypick_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = mypick_cost_cell.value
             mypick_cost_cell.value = store_detail_dto.mypick_cost
 
         except Exception as e:
             print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                mypick_cost_cell.value = original_value
 
         # 배송건수
         try:
@@ -870,10 +904,12 @@ class EzadminCrawlerProcess:
                 sheet_coord = CommonStoreEnum.배송건수.value
 
             delivery_result_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = delivery_result_cell.value
             delivery_result_cell.value = store_detail_dto.delivery_result
 
         except Exception as e:
             print(e)
+            delivery_result_cell.value = original_value
 
         self.workbook.save(self.guiDto.stats_file)
 
