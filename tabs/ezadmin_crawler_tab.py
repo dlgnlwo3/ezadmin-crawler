@@ -18,6 +18,9 @@ import pandas as pd
 from configs.ezadmin_crawler_config import EzadminCrawlerConfig as Config
 from configs.ezadmin_crawler_config import EzadminCrawlerData as ConfigData
 
+from common.chrome import open_browser, get_chrome_driver
+from selenium import webdriver
+
 
 class EzadminCrawlerTab(QWidget):
     # 초기화
@@ -37,7 +40,14 @@ class EzadminCrawlerTab(QWidget):
         self.browser.append(f"[{now}] {str(text)}")
         global_log_append(text)
 
-    # 상품상세정보 시작 클릭
+    # 크롬 브라우저
+    def open_chrome_browser(self):
+        open_browser()
+        self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
+        self.driver.implicitly_wait(10)
+        self.driver.maximize_window()
+
+    # 시작 클릭
     def crawler_start_button_clicked(self):
         if self.account_file.text() == "":
             QMessageBox.information(self, "작업 시작", f"계정 엑셀 파일을 선택해주세요.")
@@ -193,6 +203,16 @@ class EzadminCrawlerTab(QWidget):
         stats_file_inner_layout.addWidget(self.stats_file_select_button)
         stats_file_groupbox.setLayout(stats_file_inner_layout)
 
+        # 사전 작업용 브라우저
+        chrome_browser_groupbox = QGroupBox("브라우저 사전 작업")
+        chrome_browser_button = QPushButton("브라우저 열기")
+
+        chrome_browser_button.clicked.connect(self.open_chrome_browser)
+
+        browser_inner_layout = QVBoxLayout()
+        browser_inner_layout.addWidget(chrome_browser_button)
+        chrome_browser_groupbox.setLayout(browser_inner_layout)
+
         # 시작 중지
         start_stop_groupbox = QGroupBox("시작 중지")
         self.crawler_save_button = QPushButton("저장")
@@ -229,6 +249,7 @@ class EzadminCrawlerTab(QWidget):
 
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch(5)
+        bottom_layout.addWidget(chrome_browser_groupbox, 2)
         bottom_layout.addWidget(start_stop_groupbox, 3)
 
         log_layout = QVBoxLayout()
