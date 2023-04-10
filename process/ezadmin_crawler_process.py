@@ -1201,9 +1201,9 @@ class EzadminCrawlerProcess:
             self.ezadmin_login()
 
             for store_name in store_list:
-                # 스토어 테스트용 코드
-                if store_name != "11번가":
-                    continue
+                # # 스토어 테스트용 코드
+                # if store_name != "11번가":
+                #     continue
 
                 # 지마켓과 브랜디는 대상에서 제외합니다.
                 if store_name == "지마켓" or store_name == "브랜디":
