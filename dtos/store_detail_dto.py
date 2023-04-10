@@ -24,6 +24,12 @@ class StoreDetailDto:
 
         self.__coupon_cost = ""  # 쿠폰비
 
+        self.__tot_supply_price = ""  # 정산예정금액
+
+        self.__cancel_amount_price = ""  # 판매취소금액
+
+        self.__cancel_price = ""  # 정산취소금액
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -206,6 +212,54 @@ class StoreDetailDto:
             int_value = value.replace(",", "")
         int_value = int(int_value)
         self.__coupon_cost = int_value
+
+    @property
+    def tot_supply_price(self):  # getter
+        return self.__tot_supply_price
+
+    @tot_supply_price.setter
+    def tot_supply_price(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+        int_value = int(int_value)
+        self.__tot_supply_price = int_value
+
+    @property
+    def cancel_amount_price(self):  # getter
+        return self.__cancel_amount_price
+
+    @cancel_amount_price.setter
+    def cancel_amount_price(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+        int_value = int(int_value)
+        self.__cancel_amount_price = int_value
+
+    @property
+    def cancel_price(self):  # getter
+        return self.__cancel_price
+
+    @cancel_price.setter
+    def cancel_price(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+        int_value = int(int_value)
+        self.__cancel_price = int_value
 
     def to_print(self):
         print("상점이름", self.store_name)

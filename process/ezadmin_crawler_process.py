@@ -248,6 +248,24 @@ class EzadminCrawlerProcess:
             )
             store_detail_dto.org_price = org_price
 
+            # 정산예정금액
+            tot_supply_price = driver.find_element(
+                By.CSS_SELECTOR, 'td[aria-describedby*="tot_supply_price"]'
+            ).get_attribute("textContent")
+            store_detail_dto.tot_supply_price = tot_supply_price
+
+            # 정산취소금액
+            cancel_price = driver.find_element(
+                By.CSS_SELECTOR, 'td[aria-describedby*="grid1_cancel_price"]'
+            ).get_attribute("textContent")
+            store_detail_dto.cancel_price = cancel_price
+
+            # 판매취소금액
+            cancel_amount_price = driver.find_element(
+                By.CSS_SELECTOR, 'td[aria-describedby*="grid1_cancel_amount_price"]'
+            ).get_attribute("textContent")
+            store_detail_dto.cancel_amount_price = cancel_amount_price
+
         except Exception as e:
             print(f"{store_name} 검색 결과를 발견하지 못했습니다.")
 
@@ -407,15 +425,19 @@ class EzadminCrawlerProcess:
 
             self.zigzag_login()
 
-            # 지그재그
-            try:
-                zigzag_cost = self.get_zigzag_cost()
-            except Exception as e:
-                print(e)
-                print(f"지그재그 검색 실패")
-                zigzag_cost = 0
-            finally:
-                store_detail_dto.zigzag_cost = zigzag_cost
+            # # 지그재그
+            # try:
+            #     zigzag_cost = self.get_zigzag_cost()
+            # except Exception as e:
+            #     print(e)
+            #     print(f"지그재그 검색 실패")
+            #     zigzag_cost = 0
+            # finally:
+            #     store_detail_dto.zigzag_cost = zigzag_cost
+
+            # 광고비 안넣어도 됨
+            zigzag_cost = 0
+            store_detail_dto.zigzag_cost = zigzag_cost
 
             # 마이픽쿠폰
             try:
@@ -445,7 +467,7 @@ class EzadminCrawlerProcess:
             WebDriverWait(driver, 5).until(
                 EC.visibility_of_element_located((By.XPATH, '//h1[contains(text(), "파트너센터 로그인")]'))
             )
-            time.sleep(0.2)
+            time.sleep(2)
 
         except Exception as e:
             pass
@@ -457,16 +479,19 @@ class EzadminCrawlerProcess:
             login_pw = self.dict_accounts["지그재그"]["PW"]
 
             id_input = driver.find_element(By.XPATH, '//input[@placeholder="이메일"]')
+            time.sleep(0.2)
             id_input.clear()
             time.sleep(0.2)
             id_input.send_keys(login_id)
 
             pw_input = driver.find_element(By.XPATH, '//input[@placeholder="비밀번호"]')
+            time.sleep(0.2)
             pw_input.clear()
             time.sleep(0.2)
             pw_input.send_keys(login_pw)
 
             login_button = driver.find_element(By.XPATH, '//button[contains(text(), "로그인")]')
+            time.sleep(0.2)
             login_button.click()
             time.sleep(0.2)
 
@@ -1093,6 +1118,46 @@ class EzadminCrawlerProcess:
             else:
                 coupon_cost_cell.value = original_value
 
+        # 주문수수료 = 판매금액 - 정산예정금액 (11번가)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                raise Exception("주문수수료가 없습니다.")
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                sheet_coord = ElevenStreetEnum.주문수수료금액.value
+            else:
+                raise Exception("주문수수료가 없습니다.")
+
+            order_fee_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = order_fee_cell.value
+            order_fee_cell.value = store_detail_dto.tot_amount - store_detail_dto.tot_supply_price
+
+        except Exception as e:
+            print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                order_fee_cell.value = original_value
+
+        # 취소수수료 = 정산취소금액 - 판매취소금액 (11번가)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                raise Exception("주문수수료가 없습니다.")
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                sheet_coord = ElevenStreetEnum.취소수수료취소.value
+            else:
+                raise Exception("주문수수료가 없습니다.")
+
+            cancel_fee_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = cancel_fee_cell.value
+            cancel_fee_cell.value = store_detail_dto.cancel_price - store_detail_dto.cancel_amount_price
+
+        except Exception as e:
+            print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                cancel_fee_cell.value = original_value
+
         # 배송건수
         try:
             if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
@@ -1136,15 +1201,19 @@ class EzadminCrawlerProcess:
             self.ezadmin_login()
 
             for store_name in store_list:
+                # 스토어 테스트용 코드
+                if store_name != "11번가":
+                    continue
+
+                # 지마켓과 브랜디는 대상에서 제외합니다.
+                if store_name == "지마켓" or store_name == "브랜디":
+                    continue
+
                 print(f"{store_name} 작업 시작")
 
                 self.log_msg.emit(f"{store_name} 작업 시작")
 
                 store_detail_dto = StoreDetailDto()
-
-                # 스토어 테스트용 코드
-                if store_name != "티몬":
-                    continue
 
                 try:
                     store_min_col = self.get_store_min_col(store_name)
