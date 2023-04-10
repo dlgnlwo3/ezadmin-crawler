@@ -390,7 +390,7 @@ class EzadminCrawlerProcess:
 
         elif store_detail_dto.store_name == StoreNameEnum.TicketMonster.value:
             print(self.dict_accounts["티몬"]["URL"])
-            # store_detail_dto = self.go_ticketmonster_and_search_discount_cost(store_detail_dto)
+            store_detail_dto = self.go_ticketmonster_and_search_discount_cost(store_detail_dto)
 
         else:
             return store_detail_dto
@@ -547,6 +547,16 @@ class EzadminCrawlerProcess:
 
             self.wemakeprice_login()
 
+            # 파트너 부담 쿠폰 금액
+            try:
+                coupon_cost = self.wemakeprice_get_coupon_cost()
+            except Exception as e:
+                print(e)
+                print(f"쿠폰 검색 실패")
+                coupon_cost = 0
+            finally:
+                store_detail_dto.coupon_cost = coupon_cost
+
         except Exception as e:
             print(e)
 
@@ -595,14 +605,41 @@ class EzadminCrawlerProcess:
             driver.implicitly_wait(self.default_wait)
 
         try:
-            WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, '//strong[contains(text(), "전체메뉴")]'))
-            )
+            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//img[@alt="위메프 파트너 2.0"]')))
             time.sleep(0.2)
 
         except Exception as e:
             print(e)
             raise Exception("위메프 로그인 실패")
+
+    def wemakeprice_get_coupon_cost(self):
+        driver = self.driver
+        driver.get(f"https://wpartner.wemakeprice.com/settle/dailySettleList")
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//h2[contains(text(), "매출현황")]')))
+        time.sleep(0.2)
+
+        # 기간 설정
+        start_date_input = driver.find_element(By.XPATH, '//input[@id="startDt_D"]')
+        start_date_input.clear()
+        time.sleep(0.2)
+        start_date_input.send_keys(self.guiDto.target_date)
+
+        end_date_input = driver.find_element(By.XPATH, '//input[@id="endDt_D"]')
+        end_date_input.clear()
+        time.sleep(0.2)
+        end_date_input.send_keys(self.guiDto.target_date)
+
+        # 검색 클릭
+        date_search_button = driver.find_element(By.XPATH, '//button[@id="searchBtn"]')
+        date_search_button.click()
+        time.sleep(1)
+
+        coupon_cost = driver.find_element(By.XPATH, '//span[@id="settleCompleteTotSellerCouponAmt"]').get_attribute(
+            "textContent"
+        )
+        coupon_cost = coupon_cost.replace(",", "")
+
+        return coupon_cost
 
     def go_coupang_and_search_discount_cost(self, store_detail_dto: StoreDetailDto):
         driver = self.driver
@@ -694,6 +731,130 @@ class EzadminCrawlerProcess:
 
         coupon_cost = driver.find_element(By.XPATH, '//td[contains(text(), "합계:")]').get_attribute("textContent")
         coupon_cost = coupon_cost.replace("합계:", "")
+
+        return coupon_cost
+
+    def go_ticketmonster_and_search_discount_cost(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        login_url = self.dict_accounts["티몬"]["URL"]
+
+        try:
+            # 새 탭에서 열기
+            driver.execute_script(f"window.open('{login_url}');")
+            driver.switch_to.window(driver.window_handles[1])
+
+            self.ticketmonster_login()
+
+            # 쿠폰
+            try:
+                coupon_cost = self.ticketmonster_get_coupon_cost()
+            except Exception as e:
+                print(e)
+                print(f"쿠폰 검색 실패")
+                coupon_cost = 0
+            finally:
+                store_detail_dto.coupon_cost = coupon_cost
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            # 원래 탭으로 돌아오기
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            time.sleep(0.5)
+            return store_detail_dto
+
+    def ticketmonster_login(self):
+        driver = self.driver
+
+        try:
+            # 이전 로그인 세션이 남아있을 경우 바로 스토어 선택 화면으로 이동합니다.
+            WebDriverWait(driver, 5).until(
+                EC.visibility_of_element_located((By.XPATH, '//h2[contains(text(), "파트너  로그인")]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            pass
+
+        try:
+            driver.implicitly_wait(1)
+
+            login_id = self.dict_accounts["티몬"]["ID"]
+            login_pw = self.dict_accounts["티몬"]["PW"]
+
+            id_input = driver.find_element(By.XPATH, '//input[@id="form_id"]')
+            id_input.clear()
+            time.sleep(0.2)
+            id_input.send_keys(login_id)
+
+            pw_input = driver.find_element(By.XPATH, '//input[@id="form_password"]')
+            pw_input.clear()
+            time.sleep(0.2)
+            pw_input.send_keys(login_pw)
+
+            login_button = driver.find_element(By.XPATH, '//button[contains(@onclick, "submitLogin()")]')
+            login_button.click()
+            time.sleep(0.2)
+
+            WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "다음에 변경")]'))
+            )
+            time.sleep(0.2)
+
+            change_next_time_button = driver.find_element(By.XPATH, '//button[contains(text(), "다음에 변경")]')
+            change_next_time_button.click()
+            time.sleep(0.2)
+
+        except Exception as e:
+            print("로그인 정보 입력 실패")
+
+        finally:
+            driver.implicitly_wait(self.default_wait)
+
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//h1[./a[contains(text(), "TMON 배송상품 파트너센터")]]'))
+            )
+            time.sleep(0.2)
+
+        except Exception as e:
+            print(e)
+            raise Exception("티몬 로그인 실패")
+
+    def ticketmonster_get_coupon_cost(self):
+        driver = self.driver
+        driver.get(f"https://spc-settlement.tmon.co.kr/revenue/sales")
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, '//h2[contains(text(), "판매현황 조회")]'))
+        )
+        time.sleep(0.2)
+
+        # 할인현황
+        driver.find_element(By.XPATH, '//button[contains(text(), "할인현황")]').click()
+        time.sleep(0.2)
+
+        # 기간 설정
+        start_date_input = driver.find_element(By.XPATH, '//input[@id="startDt_D"]')
+        start_date_input.clear()
+        time.sleep(0.2)
+        start_date_input.send_keys(self.guiDto.target_date)
+
+        end_date_input = driver.find_element(By.XPATH, '//input[@id="endDt_D"]')
+        end_date_input.clear()
+        time.sleep(0.2)
+        end_date_input.send_keys(self.guiDto.target_date)
+
+        # 검색 클릭
+        date_search_button = driver.find_element(By.XPATH, '//button[@id="searchBtn"]')
+        date_search_button.click()
+        time.sleep(1)
+
+        coupon_cost = driver.find_element(By.XPATH, '//span[@id="settleCompleteTotSellerCouponAmt"]').get_attribute(
+            "textContent"
+        )
+        coupon_cost = coupon_cost.replace(",", "")
 
         return coupon_cost
 
