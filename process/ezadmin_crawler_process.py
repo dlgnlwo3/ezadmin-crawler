@@ -836,22 +836,30 @@ class EzadminCrawlerProcess:
         time.sleep(0.2)
 
         # 기간 설정
-        start_date_input = driver.find_element(By.XPATH, '//input[@id="startDt_D"]')
+        start_date_input = driver.find_element(By.XPATH, '//input[@id="startDate"]')
         start_date_input.clear()
         time.sleep(0.2)
         start_date_input.send_keys(self.guiDto.target_date)
 
-        end_date_input = driver.find_element(By.XPATH, '//input[@id="endDt_D"]')
+        end_date_input = driver.find_element(By.XPATH, '//input[@id="endDate"]')
         end_date_input.clear()
         time.sleep(0.2)
         end_date_input.send_keys(self.guiDto.target_date)
 
-        # 검색 클릭
-        date_search_button = driver.find_element(By.XPATH, '//button[@id="searchBtn"]')
-        date_search_button.click()
-        time.sleep(1)
+        # 진행 딜 선택 '전체(전체)'
+        deal_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[name="mainDealSrl"]'))
+        deal_select.select_by_visible_text("전체(전체)")
+        time.sleep(0.2)
 
-        coupon_cost = driver.find_element(By.XPATH, '//span[@id="settleCompleteTotSellerCouponAmt"]').get_attribute(
+        # 검색 클릭
+        date_search_button = driver.find_element(By.XPATH, '//button[@id="btn_srch"]')
+        date_search_button.click()
+        time.sleep(0.2)
+
+        WebDriverWait(driver, 15).until(EC.visibility_of_element_located((By.XPATH, '//h3[contains(text(), "할인현황")]')))
+        time.sleep(0.2)
+
+        coupon_cost = driver.find_element(By.XPATH, '//tr[./td[contains(text(), "파트너부담 즉시할인 사용금액")]]//p').get_attribute(
             "textContent"
         )
         coupon_cost = coupon_cost.replace(",", "")
@@ -1055,6 +1063,26 @@ class EzadminCrawlerProcess:
             else:
                 mypick_cost_cell.value = original_value
 
+        # 쿠폰비
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                raise Exception("쿠폰비가 없습니다.")
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                raise Exception("쿠폰비가 없습니다.")
+            else:
+                sheet_coord = CommonStoreEnum.쿠폰비.value
+
+            coupon_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = coupon_cost_cell.value
+            coupon_cost_cell.value = store_detail_dto.coupon_cost
+
+        except Exception as e:
+            print(e)
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                coupon_cost_cell.value = original_value
+
         # 배송건수
         try:
             if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
@@ -1103,6 +1131,10 @@ class EzadminCrawlerProcess:
                 self.log_msg.emit(f"{store_name} 작업 시작")
 
                 store_detail_dto = StoreDetailDto()
+
+                # # 스토어 테스트용 코드
+                # if store_name != "티몬":
+                #     continue
 
                 try:
                     store_min_col = self.get_store_min_col(store_name)
