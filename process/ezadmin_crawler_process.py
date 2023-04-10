@@ -389,7 +389,6 @@ class EzadminCrawlerProcess:
             store_detail_dto = self.go_coupang_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.TicketMonster.value:
-            print(self.dict_accounts["티몬"]["URL"])
             store_detail_dto = self.go_ticketmonster_and_search_discount_cost(store_detail_dto)
 
         else:
@@ -573,7 +572,7 @@ class EzadminCrawlerProcess:
         try:
             # 이전 로그인 세션이 남아있을 경우 바로 스토어 화면으로 이동합니다.
             WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, '//input[@name="loginid"]')))
-            time.sleep(0.2)
+            time.sleep(2)
 
         except Exception as e:
             pass
@@ -585,16 +584,19 @@ class EzadminCrawlerProcess:
             login_pw = self.dict_accounts["위메프"]["PW"]
 
             id_input = driver.find_element(By.XPATH, '//input[@name="loginid"]')
+            time.sleep(0.2)
             id_input.clear()
             time.sleep(0.2)
             id_input.send_keys(login_id)
 
             pw_input = driver.find_element(By.XPATH, '//input[@name="loginpassword"]')
+            time.sleep(0.2)
             pw_input.clear()
             time.sleep(0.2)
             pw_input.send_keys(login_pw)
 
             login_button = driver.find_element(By.XPATH, '//button[contains(text(), "로그인")]')
+            time.sleep(0.2)
             login_button.click()
             time.sleep(0.2)
 
@@ -680,7 +682,7 @@ class EzadminCrawlerProcess:
             WebDriverWait(driver, 5).until(
                 EC.visibility_of_element_located((By.XPATH, '//h1[contains(text(), "coupang")]'))
             )
-            time.sleep(0.2)
+            time.sleep(2)
 
         except Exception as e:
             pass
@@ -692,16 +694,19 @@ class EzadminCrawlerProcess:
             login_pw = self.dict_accounts["쿠팡"]["PW"]
 
             id_input = driver.find_element(By.XPATH, '//input[@id="username"]')
+            time.sleep(0.2)
             id_input.clear()
             time.sleep(0.2)
             id_input.send_keys(login_id)
 
             pw_input = driver.find_element(By.XPATH, '//input[@id="password"]')
+            time.sleep(0.2)
             pw_input.clear()
             time.sleep(0.2)
             pw_input.send_keys(login_pw)
 
             login_button = driver.find_element(By.XPATH, '//input[contains(@id, "login")]')
+            time.sleep(0.2)
             login_button.click()
             time.sleep(0.2)
 
@@ -729,8 +734,12 @@ class EzadminCrawlerProcess:
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//h4[contains(text(), "매출내역")]')))
         time.sleep(0.2)
 
-        coupon_cost = driver.find_element(By.XPATH, '//td[contains(text(), "합계:")]').get_attribute("textContent")
-        coupon_cost = coupon_cost.replace("합계:", "")
+        try:
+            coupon_cost = driver.find_element(By.XPATH, '//td[contains(text(), "합계:")]').get_attribute("textContent")
+            coupon_cost = coupon_cost.replace("합계:", "")
+        except Exception as e:
+            no_result = driver.find_element(By.XPATH, '//*[contains(text(), "내역이 없습니다")]')
+            coupon_cost = 0
 
         return coupon_cost
 
@@ -773,7 +782,7 @@ class EzadminCrawlerProcess:
             WebDriverWait(driver, 5).until(
                 EC.visibility_of_element_located((By.XPATH, '//h2[contains(text(), "파트너  로그인")]'))
             )
-            time.sleep(0.2)
+            time.sleep(2)
 
         except Exception as e:
             pass
@@ -796,16 +805,17 @@ class EzadminCrawlerProcess:
 
             login_button = driver.find_element(By.XPATH, '//button[contains(@onclick, "submitLogin()")]')
             login_button.click()
-            time.sleep(0.2)
+            time.sleep(1)
 
             WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "다음에 변경")]'))
             )
-            time.sleep(0.2)
+            time.sleep(1)
 
             change_next_time_button = driver.find_element(By.XPATH, '//button[contains(text(), "다음에 변경")]')
-            change_next_time_button.click()
             time.sleep(0.2)
+            change_next_time_button.click()
+            time.sleep(1)
 
         except Exception as e:
             print("로그인 정보 입력 실패")
@@ -1132,9 +1142,9 @@ class EzadminCrawlerProcess:
 
                 store_detail_dto = StoreDetailDto()
 
-                # # 스토어 테스트용 코드
-                # if store_name != "티몬":
-                #     continue
+                # 스토어 테스트용 코드
+                if store_name != "티몬":
+                    continue
 
                 try:
                     store_min_col = self.get_store_min_col(store_name)
