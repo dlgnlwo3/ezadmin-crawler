@@ -189,13 +189,19 @@ class EzadminCrawlerProcess:
             driver.implicitly_wait(self.default_wait)
 
     # 정산통계 -> 판매처별정산통계 화면으로 이동합니다.
-    def go_store_calculate_menu_and_search_date(self):
+    def go_store_calculate_menu_and_search_date(self, store_name: str):
         driver = self.driver
         driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F308")
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "판매처별정산통계")]'))
         )
-        time.sleep(0.1)
+        time.sleep(0.2)
+
+        # 판매처
+        store_name = StoreNameConverter().convert_store_name(store_name)
+        store_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="str_shop_code"]'))
+        store_select.select_by_visible_text(store_name)
+        time.sleep(0.2)
 
         # 날짜 검색 타입
         query_type_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="query_type"]'))
@@ -229,45 +235,83 @@ class EzadminCrawlerProcess:
             result_tr = driver.find_element(
                 By.XPATH, f'//tr[./td[contains(text(), "{store_name}") and @class="shop_name"]]'
             )
+        except Exception as e:
+            print(e)
+            raise Exception(f"{store_detail_dto.store_name} 검색 결과 조회 실패")
 
+        try:
             # 주문수량
             tot_products = result_tr.find_element(
                 By.CSS_SELECTOR, 'td[aria-describedby*="tot_products"]'
             ).get_attribute("textContent")
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 주문 수량 조회 실패")
+            tot_products = 0
+        finally:
             store_detail_dto.tot_products = tot_products
 
+        try:
             # 주문금액
             tot_amount = result_tr.find_element(By.CSS_SELECTOR, 'td[aria-describedby*="tot_amount"]').get_attribute(
                 "textContent"
             )
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 주문 금액 조회 실패")
+            tot_amount = 0
+        finally:
             store_detail_dto.tot_amount = tot_amount
 
+        try:
             # 상품원가
             org_price = result_tr.find_element(By.CSS_SELECTOR, 'td[aria-describedby*="org_price"]').get_attribute(
                 "textContent"
             )
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 상품 원가 조회 실패")
+            org_price = 0
+        finally:
             store_detail_dto.org_price = org_price
 
+        try:
             # 정산예정금액
             tot_supply_price = driver.find_element(
                 By.CSS_SELECTOR, 'td[aria-describedby*="tot_supply_price"]'
             ).get_attribute("textContent")
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 정산예정금액 조회 실패")
+            tot_supply_price = 0
+        finally:
             store_detail_dto.tot_supply_price = tot_supply_price
 
+        try:
             # 정산취소금액
             cancel_price = driver.find_element(
                 By.CSS_SELECTOR, 'td[aria-describedby*="grid1_cancel_price"]'
             ).get_attribute("textContent")
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 정산취소금액 조회 실패")
+            cancel_price = 0
+        finally:
             store_detail_dto.cancel_price = cancel_price
 
+        try:
             # 판매취소금액
             cancel_amount_price = driver.find_element(
                 By.CSS_SELECTOR, 'td[aria-describedby*="grid1_cancel_amount_price"]'
             ).get_attribute("textContent")
-            store_detail_dto.cancel_amount_price = cancel_amount_price
 
         except Exception as e:
-            print(f"{store_name} 검색 결과를 발견하지 못했습니다.")
+            print(e)
+            self.log_msg.emit(f"{store_detail_dto.store_name} 판매취소금액 조회 실패")
+            cancel_amount_price = 0
+
+        finally:
+            store_detail_dto.cancel_amount_price = cancel_amount_price
 
         return store_detail_dto
 
@@ -311,23 +355,37 @@ class EzadminCrawlerProcess:
 
     def get_cancel_from_result(self, store_detail_dto: StoreDetailDto):
         driver = self.driver
-        time.sleep(0.2)
+        time.sleep(1)
 
         try:
             # 상품수량
             cancel_total_data_product_sum = driver.find_element(
                 By.CSS_SELECTOR, 'span[id="total_data_product_sum"]'
             ).get_attribute("textContent")
+
+        except Exception as e:
+            print(e)
+            print(f"{store_detail_dto.store_name} 취소 수량 검색 실패")
+            self.log_msg.emit(f"{store_detail_dto.store_name} 취소 수량 검색 실패")
+            cancel_total_data_product_sum = 0
+
+        finally:
             store_detail_dto.cancel_total_data_product_sum = cancel_total_data_product_sum
 
+        try:
             # 판매금액
             cancel_total_data_order_sum_amount = driver.find_element(
                 By.CSS_SELECTOR, 'span[id="total_data_order_sum_amount"]'
             ).get_attribute("textContent")
-            store_detail_dto.cancel_total_data_order_sum_amount = cancel_total_data_order_sum_amount
 
         except Exception as e:
-            print(f"검색 결과를 발견하지 못했습니다.")
+            print(e)
+            print(f"{store_detail_dto.store_name} 취소 금액 검색 실패")
+            self.log_msg.emit(f"{store_detail_dto.store_name} 취소 금액 검색 실패")
+            cancel_total_data_order_sum_amount = 0
+
+        finally:
+            store_detail_dto.cancel_total_data_order_sum_amount = cancel_total_data_order_sum_amount
 
         return store_detail_dto
 
@@ -340,16 +398,30 @@ class EzadminCrawlerProcess:
             refund_total_data_product_sum = driver.find_element(
                 By.CSS_SELECTOR, 'span[id="total_data_product_sum"]'
             ).get_attribute("textContent")
+
+        except Exception as e:
+            print(e)
+            print(f"{store_detail_dto.store_name} 반품 수량 검색 실패")
+            self.log_msg.emit(f"{store_detail_dto.store_name} 반품 수량 검색 실패")
+            refund_total_data_product_sum = 0
+
+        finally:
             store_detail_dto.refund_total_data_product_sum = refund_total_data_product_sum
 
+        try:
             # 판매금액
             refund_total_data_order_sum_amount = driver.find_element(
                 By.CSS_SELECTOR, 'span[id="total_data_order_sum_amount"]'
             ).get_attribute("textContent")
-            store_detail_dto.refund_total_data_order_sum_amount = refund_total_data_order_sum_amount
 
         except Exception as e:
-            print(f"검색 결과를 발견하지 못했습니다.")
+            print(e)
+            print(f"{store_detail_dto.store_name} 반품 금액 검색 실패")
+            self.log_msg.emit(f"{store_detail_dto.store_name} 반품 금액 검색 실패")
+            refund_total_data_order_sum_amount = 0
+
+        finally:
+            store_detail_dto.refund_total_data_order_sum_amount = refund_total_data_order_sum_amount
 
         return store_detail_dto
 
@@ -397,10 +469,10 @@ class EzadminCrawlerProcess:
         return store_detail_dto
 
     def get_discount_cost_from_store(self, store_detail_dto: StoreDetailDto):
-        if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
-            store_detail_dto = self.go_zigzag_and_search_discount_cost(store_detail_dto)
+        # if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+        #     store_detail_dto = self.go_zigzag_and_search_discount_cost(store_detail_dto)
 
-        elif store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
+        if store_detail_dto.store_name == StoreNameEnum.WeMakePrice.value:
             store_detail_dto = self.go_wemakeprice_and_search_discount_cost(store_detail_dto)
 
         elif store_detail_dto.store_name == StoreNameEnum.Coupang.value:
@@ -1218,7 +1290,7 @@ class EzadminCrawlerProcess:
                 try:
                     store_min_col = self.get_store_min_col(store_name)
 
-                    self.go_store_calculate_menu_and_search_date()
+                    self.go_store_calculate_menu_and_search_date(store_name)
 
                     store_detail_dto = self.get_calculate_from_result(store_name, store_detail_dto)
 
