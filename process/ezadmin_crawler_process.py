@@ -965,7 +965,7 @@ class EzadminCrawlerProcess:
 
         # 할인현황
         driver.find_element(By.XPATH, '//button[contains(text(), "할인현황")]').click()
-        time.sleep(0.2)
+        time.sleep(3)
 
         # 기간 설정
         start_date_input = driver.find_element(By.XPATH, '//input[@id="startDate"]')
@@ -1155,45 +1155,45 @@ class EzadminCrawlerProcess:
             else:
                 total_cancel_cell.value = original_value
 
-        # 지그재그 (카페24만 기록)
-        try:
-            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
-                sheet_coord = Cafe24Enum.광고비지그재그.value
-            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
-                raise Exception("지그재그가 없습니다.")
-            else:
-                raise Exception("지그재그가 없습니다.")
+        # # 지그재그 (카페24만 기록)
+        # try:
+        #     if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+        #         sheet_coord = Cafe24Enum.광고비지그재그.value
+        #     elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+        #         raise Exception("지그재그가 없습니다.")
+        #     else:
+        #         raise Exception("지그재그가 없습니다.")
 
-            zigzag_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
-            original_value = zigzag_cost_cell.value
-            zigzag_cost_cell.value = store_detail_dto.zigzag_cost
+        #     zigzag_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+        #     original_value = zigzag_cost_cell.value
+        #     zigzag_cost_cell.value = store_detail_dto.zigzag_cost
 
-        except Exception as e:
-            print(e)
-            if str(e).find("없습니다") > -1:
-                pass
-            else:
-                zigzag_cost_cell.value = original_value
+        # except Exception as e:
+        #     print(e)
+        #     if str(e).find("없습니다") > -1:
+        #         pass
+        #     else:
+        #         zigzag_cost_cell.value = original_value
 
-        # 마이픽쿠폰 (카페24만 기록)
-        try:
-            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
-                sheet_coord = Cafe24Enum.광고비마이픽쿠폰.value
-            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
-                raise Exception("마이픽쿠폰이 없습니다.")
-            else:
-                raise Exception("마이픽쿠폰이 없습니다.")
+        # # 마이픽쿠폰 (카페24만 기록)
+        # try:
+        #     if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+        #         sheet_coord = Cafe24Enum.광고비마이픽쿠폰.value
+        #     elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+        #         raise Exception("마이픽쿠폰이 없습니다.")
+        #     else:
+        #         raise Exception("마이픽쿠폰이 없습니다.")
 
-            mypick_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
-            original_value = mypick_cost_cell.value
-            mypick_cost_cell.value = store_detail_dto.mypick_cost
+        #     mypick_cost_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+        #     original_value = mypick_cost_cell.value
+        #     mypick_cost_cell.value = store_detail_dto.mypick_cost
 
-        except Exception as e:
-            print(e)
-            if str(e).find("없습니다") > -1:
-                pass
-            else:
-                mypick_cost_cell.value = original_value
+        # except Exception as e:
+        #     print(e)
+        #     if str(e).find("없습니다") > -1:
+        #         pass
+        #     else:
+        #         mypick_cost_cell.value = original_value
 
         # 쿠폰비
         try:
@@ -1304,6 +1304,11 @@ class EzadminCrawlerProcess:
 
                 # 지마켓과 브랜디는 대상에서 제외합니다.
                 if store_name == "지마켓" or store_name == "브랜디":
+                    self.log_msg.emit(f"{store_name}는 제외하고 진행합니다.")
+                    continue
+
+                if store_name.find(".1") > -1:
+                    self.log_msg.emit(f"{store_name}는 이미 엑셀에 등록되어있는 스토어입니다.")
                     continue
 
                 print(f"{store_name} 작업 시작")
