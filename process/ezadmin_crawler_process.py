@@ -68,9 +68,16 @@ class EzadminCrawlerProcess:
             self.guiDto.stats_file, sheet_name=self.guiDto.sheet_name, keep_default_na="", header=2
         )
         store_list = []
+
         for column in df_stats.columns:
-            if column.find("Unnamed") <= -1 and column.find("\n") <= -1 and column.find("합계") <= -1:
+            if (
+                column.find("Unnamed") <= -1
+                and column.find("\n") <= -1
+                and column.find("합계") <= -1
+                and column.find(".1") <= -1
+            ):
                 store_list.append(column)
+
         print(store_list)
         self.log_msg.emit(f"{store_list}가 발견되었습니다.")
         return store_list
@@ -80,15 +87,15 @@ class EzadminCrawlerProcess:
 
         for merged_cell in merged_cells:
             if merged_cell.start_cell.internal_value == store_name:
-                print(merged_cell.start_cell.internal_value)
-                # store_column_range = merged_cell.coord
+                store_column_range = merged_cell.coord
                 store_min_col = merged_cell.min_col
                 store_max_col = merged_cell.max_col
                 store_column_range = [store_min_col, store_max_col]
-                break
+                print(merged_cell.start_cell.internal_value)
+                print(store_column_range)
+                # break
 
         # store_column_range = re.sub(r"\d+", "", store_column_range)
-        print(store_column_range)
         return store_min_col
 
     def get_target_date_row(self, target_date):
@@ -1298,17 +1305,13 @@ class EzadminCrawlerProcess:
             self.ezadmin_login()
 
             for store_name in store_list:
-                # # 스토어 테스트용 코드
-                # if store_name != "11번가":
+                # # 스토어 지정 테스트용 코드
+                # if store_name != "위메프":
                 #     continue
 
                 # 지마켓과 브랜디는 대상에서 제외합니다.
                 if store_name == "지마켓" or store_name == "브랜디":
                     self.log_msg.emit(f"{store_name}는 제외하고 진행합니다.")
-                    continue
-
-                if store_name.find(".1") > -1:
-                    self.log_msg.emit(f"{store_name}는 이미 엑셀에 등록되어있는 스토어입니다.")
                     continue
 
                 print(f"{store_name} 작업 시작")
@@ -1361,5 +1364,6 @@ class EzadminCrawlerProcess:
 
 
 if __name__ == "__main__":
-    process = EzadminCrawlerProcess()
-    process.work_start()
+    # process = EzadminCrawlerProcess()
+    # process.work_start()
+    pass
