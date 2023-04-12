@@ -9,7 +9,7 @@ from selenium import webdriver
 from dtos.gui_dto import GUIDto
 
 from common.utils import global_log_append
-from common.chrome import open_browser, get_chrome_driver
+from common.chrome import open_browser, get_chrome_driver, get_chrome_driver_new
 from common.selenium_activities import close_new_tabs, alert_ok_try
 from common.account_file import AccountFile
 
@@ -36,9 +36,10 @@ from openpyxl import load_workbook
 
 class EzadminCrawlerProcess:
     def __init__(self):
-        open_browser()
         self.default_wait = 10
-        self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
+        # open_browser()
+        # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
+        self.driver: webdriver.Chrome = get_chrome_driver_new(is_headless=True, is_secret=False)
         self.driver.implicitly_wait(self.default_wait)
         self.driver.maximize_window()
 
@@ -1354,6 +1355,8 @@ class EzadminCrawlerProcess:
             print(str(e))
             if str(e).find("채널명") > -1:
                 self.log_msg.emit(f"계정 엑셀 파일 양식이 아닙니다.")
+            elif str(e).find("Permission denied") > -1:
+                self.log_msg.emit(f"엑셀 파일이 열려있어 저장하지 못했습니다.")
             else:
                 self.log_msg.emit(f"{str(e)}")
 

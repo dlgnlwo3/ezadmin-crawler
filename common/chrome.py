@@ -46,13 +46,20 @@ def chromedriver_install(options):
 
 def get_chrome_driver(is_headless=False, is_secret=False):
     options = Options()
-    options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
     if is_headless:
         options.add_argument("--headless")
     if is_secret:
         options.add_argument("incognito")  # 시크릿 모드
 
     options.add_argument("--disable-popup-blocking")  # 팝업창을 허용하는 옵션
+    options.add_argument("--disable-gpu")
+    options.add_argument("lang=ko_KR")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--ignore-certificate-errors")
+    options.add_argument("--allow-running-insecure-content")
+    options.add_argument("--disable-web-security")
+    options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
 
     chrome_ver = chromedriver_autoinstaller.get_chrome_version().split(".")[0]
     try:
@@ -82,19 +89,11 @@ def get_chrome_driver_new(is_headless=False, is_secret=False, tor=False, move_to
     options.add_argument("--disable-popup-blocking")  # 팝업창을 허용하는 옵션
     options.add_argument("--disable-gpu")
     options.add_argument("lang=ko_KR")
-    # options.add_argument(
-    #     "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
-    # )
-
-    # 아이폰 환경
-    # options.add_argument(
-    #     "--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"
-    # )
-
-    # 안드로이드 환경
-    # options.add_argument(
-    #     "--user-agent=Mozilla/5.0 (Linux; Android 9; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.83 Mobile Safari/537.36"
-    # )
+    options.add_argument("--disable-infobars")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--ignore-certificate-errors")
+    options.add_argument("--allow-running-insecure-content")
+    options.add_argument("--disable-web-security")
 
     chrome_ver = chromedriver_autoinstaller.get_chrome_version().split(".")[0]
     try:
@@ -102,7 +101,7 @@ def get_chrome_driver_new(is_headless=False, is_secret=False, tor=False, move_to
     except:
         chromedriver_autoinstaller.install("./")
         driver = webdriver.Chrome(f"./{chrome_ver}/chromedriver.exe", options=options)
-    driver.implicitly_wait(5)  # 페이지가 로딩될 때 까지 10초동안 대기
+    driver.implicitly_wait(10)  # 페이지가 로딩될 때 까지 10초동안 대기
     driver.set_page_load_timeout(120)  # 브라우저의 로딩시간 대기
 
     driver.maximize_window()

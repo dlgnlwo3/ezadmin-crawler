@@ -51,7 +51,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__tot_products = int_value
 
     @property
@@ -67,7 +72,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__tot_amount = int_value
 
     @property
@@ -83,7 +93,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__org_price = int_value
 
     @property
@@ -99,7 +114,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__cancel_total_data_product_sum = int_value
 
     @property
@@ -114,7 +134,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__cancel_total_data_order_sum_amount = int_value
 
     @property
@@ -129,7 +154,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__refund_total_data_product_sum = int_value
 
     @property
@@ -145,7 +175,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__refund_total_data_order_sum_amount = int_value
 
     @property
@@ -161,7 +196,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__delivery_result = int_value
 
     @property
@@ -177,7 +217,11 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
 
         self.__zigzag_cost = int_value
 
@@ -194,7 +238,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__mypick_cost = int_value
 
     @property
@@ -210,7 +259,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__coupon_cost = int_value
 
     @property
@@ -226,7 +280,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__tot_supply_price = int_value
 
     @property
@@ -242,7 +301,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__cancel_amount_price = int_value
 
     @property
@@ -258,7 +322,12 @@ class StoreDetailDto:
 
         elif value != "":
             int_value = value.replace(",", "")
-        int_value = int(int_value)
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
         self.__cancel_price = int_value
 
     def to_print(self):

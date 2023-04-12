@@ -43,9 +43,9 @@ class EzadminCrawlerTab(QWidget):
     # 크롬 브라우저
     def open_chrome_browser(self):
         open_browser()
-        self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
-        self.driver.implicitly_wait(10)
-        self.driver.maximize_window()
+        # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
+        # self.driver.implicitly_wait(10)
+        # self.driver.maximize_window()
 
     # 시작 클릭
     def crawler_start_button_clicked(self):
