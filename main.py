@@ -28,7 +28,7 @@ def my_exception_hook(exctype, value, traceback):
 
 sys.excepthook = my_exception_hook
 
-# pyinstaller -n "ezadmin v0.0.4" -w --onefile --clean "main.py" --icon "assets\cafe24.ico"
+# pyinstaller -n "ezadmin v0.0.4" -w --onefile --clean "main.py" --icon "assets\ezadmin.ico"
 
 
 class MainUI(QWidget):
@@ -72,7 +72,7 @@ class MainUI(QWidget):
     # 메인 UI
     def initUI(self):
         # 이미지 주소를 복사해야 함
-        ICON_IMAGE_URL = "https://i.imgur.com/Ui15lQB.png"
+        ICON_IMAGE_URL = "https://i.imgur.com/bV1HDvH.png"
         self.icon = QNetworkAccessManager()
         self.icon.finished.connect(self.set_window_icon_from_response)
         self.icon.get(QNetworkRequest(QUrl(ICON_IMAGE_URL)))
