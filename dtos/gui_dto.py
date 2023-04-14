@@ -10,7 +10,7 @@ class GUIDto:
         self.__account_file = ""
         self.__stats_file = ""
         self.__sheet_name = ""
-        self.__target_date = ""
+        self.__target_date_list = []
 
     @property
     def account_file(self):  # getter
@@ -37,15 +37,15 @@ class GUIDto:
         self.__sheet_name = value
 
     @property
-    def target_date(self):  # getter
-        return self.__target_date
+    def target_date_list(self):  # getter
+        return self.__target_date_list
 
-    @target_date.setter
-    def target_date(self, value):  # setter
-        self.__target_date = value
+    @target_date_list.setter
+    def target_date_list(self, value):  # setter
+        self.__target_date_list = value
 
     def to_print(self):
         print("account_file: ", self.account_file)
         print("stats_file: ", self.stats_file)
         print("sheet_name: ", self.sheet_name)
-        print("target_date: ", self.target_date)
+        print("target_date_list: ", self.target_date_list)

@@ -88,7 +88,7 @@ class EzadminCrawlerTab(QWidget):
         guiDto.account_file = account_file
         guiDto.stats_file = stats_file
         guiDto.sheet_name = self.sheet_combobox.currentText()
-        guiDto.target_date = self.date_edit.text()
+        guiDto.target_date_list = selected_date_list
 
         self.crawler_thread = EzadminCrawlerThread()
         self.crawler_thread.log_msg.connect(self.log_append)
