@@ -43,9 +43,6 @@ class EzadminCrawlerTab(QWidget):
     # 크롬 브라우저
     def open_chrome_browser(self):
         open_browser()
-        # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
-        # self.driver.implicitly_wait(10)
-        # self.driver.maximize_window()
 
     # 시작 클릭
     def crawler_start_button_clicked(self):
@@ -74,6 +71,18 @@ class EzadminCrawlerTab(QWidget):
             QMessageBox.information(self, "작업 시작", f"시트를 선택해주세요.")
             self.log_append(f"시트를 선택해주세요.")
             return
+
+        selected_date_list = []
+        self.date_listwidget.selectAll()
+        if len(self.date_listwidget.selectedItems()) <= 0:
+            print(f"선택된 날짜가 없습니다.")
+            QMessageBox.information(self, "날짜 선택", f"선택된 날짜가 없습니다.")
+            return
+
+        else:
+            date_list_items = self.date_listwidget.selectedItems()
+            for date_item in date_list_items:
+                selected_date_list.append(date_item.text())
 
         guiDto = GUIDto()
         guiDto.account_file = account_file
@@ -150,10 +159,22 @@ class EzadminCrawlerTab(QWidget):
             sheet_list = []
         self.set_sheet_combobox(sheet_list)
 
-    # 단말기 콤보박스 세팅
     def set_sheet_combobox(self, sheet_list):
         for sheet in sheet_list:
             self.sheet_combobox.addItem(sheet)
+
+    def add_date_button_clicked(self):
+        target_date = self.date_edit.text()
+        print(target_date)
+        self.date_listwidget.addItem(target_date)
+
+    def remove_date_button_clicked(self):
+        print("click")
+        selected_items = self.date_listwidget.selectedItems()
+        if not selected_items:
+            return
+        for item in selected_items:
+            self.date_listwidget.takeItem(self.date_listwidget.row(item))
 
     # 메인 UI
     def initUI(self):
@@ -173,6 +194,28 @@ class EzadminCrawlerTab(QWidget):
         date_edit_inner_layout = QHBoxLayout()
         date_edit_inner_layout.addWidget(self.date_edit)
         date_edit_groupbox.setLayout(date_edit_inner_layout)
+
+        # 날짜 버튼
+        date_button_groupbox = QGroupBox("작업 날짜 추가")
+        self.add_date_button = QPushButton("날짜 추가")
+        self.remove_date_button = QPushButton("날짜 제거")
+
+        self.add_date_button.clicked.connect(self.add_date_button_clicked)
+        self.remove_date_button.clicked.connect(self.remove_date_button_clicked)
+
+        date_button_inner_layout = QHBoxLayout()
+        date_button_inner_layout.addWidget(self.add_date_button)
+        date_button_inner_layout.addWidget(self.remove_date_button)
+        date_button_groupbox.setLayout(date_button_inner_layout)
+
+        # 날짜 리스트
+        date_list_groupbox = QGroupBox("날짜 목록")
+        self.date_listwidget = QListWidget()
+        self.date_listwidget.setSelectionMode(QAbstractItemView.MultiSelection)
+
+        date_list_inner_layout = QVBoxLayout()
+        date_list_inner_layout.addWidget(self.date_listwidget)
+        date_list_groupbox.setLayout(date_list_inner_layout)
 
         # 계정 엑셀 파일
         account_file_groupbox = QGroupBox("계정 엑셀 파일")
@@ -247,6 +290,14 @@ class EzadminCrawlerTab(QWidget):
         mid_layout.addWidget(sheet_setting_groupbox, 5)
         mid_layout.addWidget(date_edit_groupbox, 3)
 
+        date_button_layout = QHBoxLayout()
+        date_button_layout.addStretch(5)
+        date_button_layout.addWidget(date_button_groupbox, 3)
+
+        date_list_layout = QHBoxLayout()
+        date_list_layout.addStretch(5)
+        date_list_layout.addWidget(date_list_groupbox, 3)
+
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch(5)
         bottom_layout.addWidget(chrome_browser_groupbox, 2)
@@ -256,9 +307,11 @@ class EzadminCrawlerTab(QWidget):
         log_layout.addWidget(log_groupbox)
 
         layout = QVBoxLayout()
-        layout.addLayout(top_layout)
-        layout.addLayout(mid_layout)
-        layout.addLayout(bottom_layout)
-        layout.addLayout(log_layout)
+        layout.addLayout(top_layout, 1)
+        layout.addLayout(mid_layout, 1)
+        layout.addLayout(date_button_layout, 1)
+        layout.addLayout(date_list_layout, 4)
+        layout.addLayout(bottom_layout, 1)
+        layout.addLayout(log_layout, 8)
 
         self.setLayout(layout)
