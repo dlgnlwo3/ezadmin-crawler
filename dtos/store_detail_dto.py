@@ -30,6 +30,9 @@ class StoreDetailDto:
 
         self.__cancel_price = ""  # 정산취소금액
 
+        # 카페24용 당일배송 관련
+        self.__today_delivery_result = ""
+
     @property
     def store_name(self):  # getter
         return self.__store_name
@@ -203,6 +206,27 @@ class StoreDetailDto:
             int_value = 0
 
         self.__delivery_result = int_value
+
+    @property
+    def today_delivery_result(self):  # getter
+        return self.__today_delivery_result
+
+    @today_delivery_result.setter
+    def today_delivery_result(self, value: str):  # setter
+        int_value = 0
+
+        if value == 0:
+            pass
+
+        elif value != "":
+            int_value = value.replace(",", "")
+
+        try:
+            int_value = int(int_value)
+        except Exception as e:
+            int_value = 0
+
+        self.__today_delivery_result = int_value
 
     @property
     def zigzag_cost(self):  # getter

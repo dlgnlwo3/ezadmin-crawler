@@ -465,6 +465,37 @@ class EzadminCrawlerProcess:
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
+    # 정산통계 -> 배송통계 이동
+    def go_store_delivery_menu_and_search_date_for_today_delivery(self, store_name: str):
+        driver = self.driver
+        driver.get("https://ga20.ezadmin.co.kr/template35.htm?template=F500")
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//h3[contains(text(), "배송통계")]')))
+        time.sleep(0.2)
+
+        # 판매처
+        store_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="str_shop_code"]'))
+        store_select.select_by_visible_text(store_name)
+        time.sleep(0.2)
+
+        # 시작일
+        start_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="start_date"]')
+        start_date_input.clear()
+        start_date_input.send_keys(self.target_date)
+
+        # 종료일
+        end_date_input = driver.find_element(By.CSS_SELECTOR, 'input[id="end_date"]')
+        end_date_input.clear()
+        end_date_input.send_keys(self.target_date)
+
+        # 택배사 -> 핑퐁
+        trans_corp_select = Select(driver.find_element(By.CSS_SELECTOR, 'select[id="trans_corp"]'))
+        trans_corp_select.select_by_visible_text("핑퐁")
+        time.sleep(0.2)
+
+        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        driver.execute_script("arguments[0].click();", search_button)
+        time.sleep(3)
+
     def get_delivery_from_result(self, store_detail_dto: StoreDetailDto):
         driver = self.driver
         time.sleep(0.2)
@@ -482,6 +513,26 @@ class EzadminCrawlerProcess:
             delivery_result = 0
         finally:
             store_detail_dto.delivery_result = delivery_result
+
+        return store_detail_dto
+
+    def get_delivery_from_result_for_today_delivery(self, store_detail_dto: StoreDetailDto):
+        driver = self.driver
+        time.sleep(0.2)
+
+        try:
+            # 전체 결과 td
+            # $x('//tr[./td[contains(text(), "2023-04-06")]]/td/a[contains(@href, "모두")]')
+            today_delivery_result = driver.find_element(
+                By.XPATH, f'//tr[./td[contains(text(), "{self.target_date}")]]/td/a[contains(@href, "모두")]'
+            ).get_attribute("textContent")
+            self.log_msg.emit(f"[{self.target_date}] {store_detail_dto.store_name} 핑퐁 배송: {today_delivery_result}")
+        except Exception as e:
+            print(e)
+            self.log_msg.emit(f"[{self.target_date}] {store_detail_dto.store_name} 핑퐁 배송 조회 실패")
+            today_delivery_result = 0
+        finally:
+            store_detail_dto.today_delivery_result = today_delivery_result
 
         return store_detail_dto
 
@@ -1288,6 +1339,23 @@ class EzadminCrawlerProcess:
             print(e)
             delivery_result_cell.value = original_value
 
+        # 당일배송건수 (카페24)
+        try:
+            if store_detail_dto.store_name == StoreNameEnum.Cafe24.value:
+                sheet_coord = Cafe24Enum.당일배송건수.value
+            elif store_detail_dto.store_name == StoreNameEnum.ElevenStreet.value:
+                raise Exception("당일배송이 없습니다.")
+            else:
+                raise Exception("당일배송이 없습니다.")
+
+            delivery_result_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = delivery_result_cell.value
+            delivery_result_cell.value = store_detail_dto.today_delivery_result
+
+        except Exception as e:
+            print(e)
+            delivery_result_cell.value = original_value
+
         self.workbook.save(self.guiDto.stats_file)
 
         self.log_msg.emit(f"[{self.target_date}] {store_detail_dto.store_name} 저장 완료")
@@ -1319,7 +1387,7 @@ class EzadminCrawlerProcess:
 
                 for store_name in store_list:
                     # # 스토어 지정 테스트용 코드
-                    # if store_name != "위메프":
+                    # if store_name != "자사몰(까페24기준)":
                     #     continue
 
                     # 지마켓과 브랜디는 대상에서 제외합니다.
@@ -1351,6 +1419,12 @@ class EzadminCrawlerProcess:
                         self.go_store_delivery_menu_and_search_date(store_detail_dto.store_name)
 
                         store_detail_dto = self.get_delivery_from_result(store_detail_dto)
+
+                        # 카페24에 한해서 당일배송(택배사-핑퐁)을 검색합니다.
+                        if store_detail_dto.store_name.find("카페24") > -1:
+                            self.go_store_delivery_menu_and_search_date_for_today_delivery(store_detail_dto.store_name)
+
+                            store_detail_dto = self.get_delivery_from_result_for_today_delivery(store_detail_dto)
 
                         store_detail_dto = self.get_discount_cost_from_store(store_detail_dto)
 

@@ -63,9 +63,11 @@ class Cafe24Enum(Enum):
     원가비율 = 26
     배송건수 = 27
     배송비용 = 28
-    VAT = 29
-    수익금액 = 30
-    수익비율 = 31
+    당일배송건수 = 29
+    당일배송비용 = 30
+    VAT = 31
+    수익금액 = 32
+    수익비율 = 33
 
 
 class ElevenStreetEnum(Enum):
