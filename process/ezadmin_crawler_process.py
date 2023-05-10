@@ -1348,13 +1348,16 @@ class EzadminCrawlerProcess:
             else:
                 raise Exception("당일배송이 없습니다.")
 
-            delivery_result_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
-            original_value = delivery_result_cell.value
-            delivery_result_cell.value = store_detail_dto.today_delivery_result
+            today_delivery_result_cell = self.sheet.cell(row=target_date_row, column=store_min_col + sheet_coord)
+            original_value = today_delivery_result_cell.value
+            today_delivery_result_cell.value = store_detail_dto.today_delivery_result
 
         except Exception as e:
             print(e)
-            delivery_result_cell.value = original_value
+            if str(e).find("없습니다") > -1:
+                pass
+            else:
+                today_delivery_result_cell.value = original_value
 
         self.workbook.save(self.guiDto.stats_file)
 
