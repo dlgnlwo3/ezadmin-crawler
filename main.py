@@ -28,7 +28,7 @@ def my_exception_hook(exctype, value, traceback):
 
 sys.excepthook = my_exception_hook
 
-# pyinstaller -n "ezadmin v0.0.6 (카페24 당일 배송 조회)" -w --onefile --clean "main.py" --icon "assets\ezadmin.ico"
+# pyinstaller -n "ezadmin v0.0.7 (기간 만료 관련 팝업 처리)" -w --onefile --clean "main.py" --icon "assets\ezadmin.ico"
 
 
 class MainUI(QWidget):
@@ -90,7 +90,7 @@ class MainUI(QWidget):
         self.setLayout(vbox)
 
         # 앱 기본 설정
-        self.setWindowTitle(f"ezadmin v0.0.6")
+        self.setWindowTitle(f"ezadmin v0.0.7")
         self.resize(600, 900)
         self.center()
         self.show()

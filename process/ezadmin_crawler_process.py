@@ -158,7 +158,13 @@ class EzadminCrawlerProcess:
             time.sleep(0.2)
 
             # 로그인 성공 시 나오는 화면
-            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//body[@class="bgline"]')))
+            try:
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "코코블랑")]'))
+                )
+            except Exception as e:
+                print(e)
+
             time.sleep(0.2)
 
             self.close_ezadmin_notice_popups()
@@ -187,6 +193,18 @@ class EzadminCrawlerProcess:
             close_all_popups = driver.find_element(By.XPATH, '//a[contains(text(), "팝업 전체 닫기")]')
             driver.execute_script("arguments[0].click();", close_all_popups)
             time.sleep(0.2)
+
+            # 부가서비스 기간 만료 안내
+            try:
+                close_service_notice_button = driver.find_element(
+                    By.XPATH,
+                    '//div[@class="modal-dialog"][.//*[contains(text(), "부가서비스 기간 만료 안내")]]//a[@class="page-close"]',
+                )
+                driver.execute_script("arguments[0].click();", close_service_notice_button)
+                time.sleep(0.2)
+
+            except Exception as e:
+                print("부가서비스 기간 만료 안내창 없음")
 
         except Exception as e:
             print(e)
