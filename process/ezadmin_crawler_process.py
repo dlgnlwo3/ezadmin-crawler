@@ -39,7 +39,7 @@ class EzadminCrawlerProcess:
         self.default_wait = 10
         # open_browser()
         # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
-        self.driver: webdriver.Chrome = get_chrome_driver_new(is_headless=True, is_secret=False)
+        self.driver: webdriver.Chrome = get_chrome_driver_new(is_headless=False, is_secret=False)
         self.driver.implicitly_wait(self.default_wait)
         self.driver.maximize_window()
 
@@ -519,6 +519,7 @@ class EzadminCrawlerProcess:
         time.sleep(0.2)
 
         try:
+            driver.implicitly_wait(1)
             # 전체 결과 td
             # $x('//tr[./td[contains(text(), "2023-04-06")]]/td/a[contains(@href, "모두")]')
             delivery_result = driver.find_element(
@@ -530,6 +531,7 @@ class EzadminCrawlerProcess:
             self.log_msg.emit(f"[{self.target_date}] {store_detail_dto.store_name} 배송 조회 실패")
             delivery_result = 0
         finally:
+            driver.implicitly_wait(self.default_wait)
             store_detail_dto.delivery_result = delivery_result
 
         return store_detail_dto
@@ -1468,7 +1470,7 @@ class EzadminCrawlerProcess:
                 self.log_msg.emit(f"{str(e)}")
 
         finally:
-            self.driver.close()
+            self.driver.quit()
             self.workbook.close()
             time.sleep(0.2)
 
