@@ -39,7 +39,7 @@ class EzadminCrawlerProcess:
         self.default_wait = 10
         # open_browser()
         # self.driver: webdriver.Chrome = get_chrome_driver(is_headless=False, is_secret=False)
-        self.driver: webdriver.Chrome = get_chrome_driver_new(is_headless=False, is_secret=False)
+        self.driver: webdriver.Chrome = get_chrome_driver_new(is_headless=True, is_secret=False)
         self.driver.implicitly_wait(self.default_wait)
         self.driver.maximize_window()
 
@@ -242,7 +242,7 @@ class EzadminCrawlerProcess:
         end_date_input.clear()
         end_date_input.send_keys(self.target_date)
 
-        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        search_button = driver.find_element(By.XPATH, '//button[contains(@id, "search")][contains(text(), "검색")]')
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
