@@ -242,7 +242,7 @@ class EzadminCrawlerProcess:
         end_date_input.clear()
         end_date_input.send_keys(self.target_date)
 
-        search_button = driver.find_element(By.XPATH, '//button[contains(@id, "search")][contains(text(), "검색")]')
+        search_button = driver.find_element(By.XPATH, '//*[contains(@id, "search")][contains(text(), "검색")]')
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
@@ -377,7 +377,7 @@ class EzadminCrawlerProcess:
         store_select.select_by_visible_text(store_name)
         time.sleep(0.2)
 
-        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        search_button = driver.find_element(By.XPATH, '//*[contains(@id, "search")][contains(text(), "검색")]')
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
@@ -479,7 +479,7 @@ class EzadminCrawlerProcess:
         end_date_input.clear()
         end_date_input.send_keys(self.target_date)
 
-        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        search_button = driver.find_element(By.XPATH, '//*[contains(@id, "search")][contains(text(), "검색")]')
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
@@ -510,7 +510,7 @@ class EzadminCrawlerProcess:
         trans_corp_select.select_by_visible_text("핑퐁")
         time.sleep(0.2)
 
-        search_button = driver.find_element(By.XPATH, '//div[contains(@id, "search")][contains(text(), "검색")]')
+        search_button = driver.find_element(By.XPATH, '//*[contains(@id, "search")][contains(text(), "검색")]')
         driver.execute_script("arguments[0].click();", search_button)
         time.sleep(3)
 
@@ -799,7 +799,7 @@ class EzadminCrawlerProcess:
             driver.implicitly_wait(self.default_wait)
 
         try:
-            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//img[@alt="위메프 파트너 2.0"]')))
+            WebDriverWait(driver, 15).until(EC.visibility_of_element_located((By.XPATH, '//img[@alt="위메프 파트너 2.0"]')))
             time.sleep(0.5)
 
         except Exception as e:
@@ -1075,7 +1075,7 @@ class EzadminCrawlerProcess:
         date_search_button.click()
         time.sleep(1)
 
-        WebDriverWait(driver, 15).until(EC.visibility_of_element_located((By.XPATH, '//h3[contains(text(), "할인현황")]')))
+        WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.XPATH, '//h3[contains(text(), "할인현황")]')))
         time.sleep(0.5)
 
         coupon_cost = driver.find_element(By.XPATH, '//tr[./td[contains(text(), "파트너부담 즉시할인 사용금액")]]//p').get_attribute(
@@ -1410,7 +1410,7 @@ class EzadminCrawlerProcess:
 
                 for store_name in store_list:
                     # # 스토어 지정 테스트용 코드
-                    # if store_name != "자사몰(까페24기준)":
+                    # if store_name != "위메프":
                     #     continue
 
                     # 지마켓과 브랜디는 대상에서 제외합니다.
