@@ -1409,9 +1409,9 @@ class EzadminCrawlerProcess:
                 target_date_row = self.get_target_date_row(self.target_date)
 
                 for store_name in store_list:
-                    # 스토어 지정 테스트용 코드
-                    if store_name != "카카오":
-                        continue
+                    # # 스토어 지정 테스트용 코드
+                    # if store_name != "카카오":
+                    #     continue
 
                     # 지마켓과 브랜디는 대상에서 제외합니다.
                     if store_name == "지마켓" or store_name == "브랜디":
