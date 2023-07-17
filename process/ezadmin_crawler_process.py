@@ -261,7 +261,7 @@ class EzadminCrawlerProcess:
             )
         except Exception as e:
             print(e)
-            raise Exception(f"[{self.target_date}] {store_detail_dto.store_name} 검색 결과 조회 실패")
+            self.log_msg.emit(f"[{self.target_date}] {store_detail_dto.store_name} 검색 결과 조회 실패")
 
         try:
             # 주문수량
@@ -1409,9 +1409,9 @@ class EzadminCrawlerProcess:
                 target_date_row = self.get_target_date_row(self.target_date)
 
                 for store_name in store_list:
-                    # # 스토어 지정 테스트용 코드
-                    # if store_name != "위메프":
-                    #     continue
+                    # 스토어 지정 테스트용 코드
+                    if store_name != "카카오":
+                        continue
 
                     # 지마켓과 브랜디는 대상에서 제외합니다.
                     if store_name == "지마켓" or store_name == "브랜디":
